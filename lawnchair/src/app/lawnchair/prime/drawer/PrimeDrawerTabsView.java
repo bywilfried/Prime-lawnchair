@@ -234,7 +234,10 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         if (activityContext == null) return;
         ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
         if (!tab.isSystem()) {
-            items.add(optionUnimplemented(R.string.prime_tab_rename));
+            items.add(option(R.string.prime_tab_rename, v -> {
+                showRenameTabDialog(parent, tab);
+                return true;
+            }));
             items.add(optionUnimplemented(R.string.prime_tab_reorganize));
         }
         items.add(option(R.string.prime_tab_set_default, v -> {
@@ -247,7 +250,10 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 return true;
             }));
             items.add(optionUnimplemented(R.string.prime_tab_advanced));
-            items.add(optionUnimplemented(R.string.prime_tab_delete));
+            items.add(option(R.string.prime_tab_delete, v -> {
+                showDeleteTabDialog(parent, tab);
+                return true;
+            }));
         }
 
         int[] location = new int[2];
@@ -350,6 +356,58 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         return PrimeDrawerTabsRepository.ALL_TAB_ID.equals(tab.getId())
                 ? getContext().getString(R.string.prime_tab_all)
                 : getContext().getString(R.string.prime_tab_unclassified);
+    }
+
+    private void showRenameTabDialog(FloatingHeaderView parent, PrimeDrawerTab tab) {
+        EditText input = new EditText(getContext());
+        input.setText(tab.getTitle());
+        input.setSelectAllOnFocus(true);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+        int horizontalPadding = dp(24);
+        LinearLayout container = new LinearLayout(getContext());
+        container.setPadding(horizontalPadding, 0, horizontalPadding, 0);
+        container.addView(input, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setTitle(R.string.prime_tab_rename)
+                .setView(container)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.prime_tab_rename_action, null)
+                .create();
+        dialog.setOnShowListener(ignored -> {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String title = input.getText().toString().trim();
+                if (title.isEmpty()) {
+                    input.setError(getContext().getString(R.string.prime_tab_name_required));
+                    return;
+                }
+                mRepository.renameTab(tab.getId(), title);
+                dialog.dismiss();
+                refresh(parent);
+                parent.onPrimeDrawerTabSelected();
+            });
+            input.requestFocus();
+            dialog.getWindow().setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        });
+        dialog.show();
+    }
+
+    private void showDeleteTabDialog(FloatingHeaderView parent, PrimeDrawerTab tab) {
+        new AlertDialog.Builder(getContext())
+                .setTitle(R.string.prime_tab_delete_confirm_title)
+                .setMessage(getContext().getString(
+                        R.string.prime_tab_delete_confirm_message, tab.getTitle()))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.prime_tab_delete, (dialog, which) -> {
+                    mRepository.deleteTab(tab.getId());
+                    refresh(parent);
+                    parent.onPrimeDrawerTabSelected();
+                })
+                .show();
     }
 
     private void showCreateTabDialog(FloatingHeaderView parent) {
