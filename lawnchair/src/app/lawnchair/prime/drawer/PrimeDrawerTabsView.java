@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.EditText;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import android.app.AlertDialog;
 
 import com.android.launcher3.R;
 import com.android.launcher3.allapps.FloatingHeaderRow;
