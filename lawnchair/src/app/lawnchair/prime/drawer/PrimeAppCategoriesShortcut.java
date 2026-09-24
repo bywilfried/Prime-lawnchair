@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.util.TypedValue;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -66,6 +67,15 @@ public class PrimeAppCategoriesShortcut extends SystemShortcut<ActivityContext> 
             if (tab.isSystem()) continue;
             CheckBox checkBox = new CheckBox(context);
             checkBox.setText(tab.getTitle());
+            TypedValue textColor = new TypedValue();
+            if (context.getTheme().resolveAttribute(
+                    android.R.attr.textColorPrimary, textColor, true)) {
+                if (textColor.resourceId != 0) {
+                    checkBox.setTextColor(context.getColorStateList(textColor.resourceId));
+                } else {
+                    checkBox.setTextColor(textColor.data);
+                }
+            }
             checkBox.setTag(tab.getId());
             checkBox.setChecked(tab.getApps().contains(appKey.toString()));
             checkBox.setPadding(dp(context, 8), dp(context, 4), dp(context, 8), dp(context, 4));
