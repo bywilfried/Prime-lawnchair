@@ -31,7 +31,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -109,14 +108,10 @@ fun AppDrawerPreferences(
                         .getConfiguration()
                         .tabs
                         .any { !it.isSystem }
-                    LaunchedEffect(hasUserTabs) {
-                        if (!hasUserTabs && hideAllAdapter.state.value) {
-                            hideAllAdapter.onChange(false)
-                        }
-                    }
                     SwitchPreference(
+                        checked = hasUserTabs && hideAllAdapter.state.value,
+                        onCheckedChange = hideAllAdapter::onChange,
                         label = stringResource(id = R.string.prime_tabs_hide_all),
-                        adapter = hideAllAdapter,
                         enabled = hasUserTabs,
                     )
                     SwitchPreference(
