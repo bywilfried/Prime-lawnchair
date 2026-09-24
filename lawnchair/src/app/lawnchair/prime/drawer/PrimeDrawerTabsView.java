@@ -90,7 +90,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         background.setShape(GradientDrawable.RECTANGLE);
         background.setCornerRadius(dp(20));
         if (selected) {
-            background.setColor(Themes.getAttrColor(getContext(), R.attr.colorAccent));
+            background.setColor(Themes.getAttrColor(getContext(), android.R.attr.colorAccent));
         } else {
             background.setColor(0x00000000);
             background.setStroke(dp(1),
