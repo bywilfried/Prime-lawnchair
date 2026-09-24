@@ -104,19 +104,28 @@ fun AppDrawerPreferences(
                         ),
                     )
                     val hideAllAdapter = prefs.drawerTabsHideAll.getAdapter()
+                    val hideUnclassifiedAdapter = prefs.drawerTabsHideUnclassified.getAdapter()
                     val hasUserTabs = PrimeDrawerTabsRepository(context)
                         .getConfiguration()
                         .tabs
                         .any { !it.isSystem }
+                    val unclassifiedVisible = !hideUnclassifiedAdapter.state.value
+                    val canHideAll = hasUserTabs || unclassifiedVisible
                     SwitchPreference(
-                        checked = hasUserTabs && hideAllAdapter.state.value,
+                        checked = canHideAll && hideAllAdapter.state.value,
                         onCheckedChange = hideAllAdapter::onChange,
                         label = stringResource(id = R.string.prime_tabs_hide_all),
-                        enabled = hasUserTabs,
+                        enabled = canHideAll,
                     )
                     SwitchPreference(
+                        checked = hideUnclassifiedAdapter.state.value,
+                        onCheckedChange = { hide ->
+                            hideUnclassifiedAdapter.onChange(hide)
+                            if (hide && !hasUserTabs && hideAllAdapter.state.value) {
+                                hideAllAdapter.onChange(false)
+                            }
+                        },
                         label = stringResource(id = R.string.prime_tabs_hide_unclassified),
-                        adapter = prefs.drawerTabsHideUnclassified.getAdapter(),
                     )
                 }
             }

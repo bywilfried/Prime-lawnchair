@@ -49,7 +49,10 @@ class PrimeDrawerTabsRepository(context: Context) {
                 selectedTabId = configuration.selectedTabId.takeUnless { it == tabId } ?: ALL_TAB_ID,
             ),
         )
-        if (remainingTabs.none { !it.isSystem }) {
+        if (remainingTabs.none { !it.isSystem } &&
+            primePrefs.drawerTabsHideUnclassified.get() &&
+            primePrefs.drawerTabsHideAll.get()
+        ) {
             primePrefs.drawerTabsHideAll.set(false)
         }
     }
