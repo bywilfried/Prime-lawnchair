@@ -275,6 +275,11 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             CheckBox checkBox = new CheckBox(getContext());
             String key = app.toComponentKey().toString();
             checkBox.setText(app.title);
+            android.graphics.drawable.Drawable icon = app.newIcon(getContext());
+            int iconSize = dp(32);
+            icon.setBounds(0, 0, iconSize, iconSize);
+            checkBox.setCompoundDrawablesRelative(icon, null, null, null);
+            checkBox.setCompoundDrawablePadding(dp(12));
             TypedValue textColor = new TypedValue();
             if (getContext().getTheme().resolveAttribute(
                     android.R.attr.textColorPrimary, textColor, true)) {

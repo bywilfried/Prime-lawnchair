@@ -74,6 +74,24 @@ class PrimeDrawerTabsRepository(context: Context) {
         updateTab(tabId) { tab -> tab.copy(apps = apps.mapTo(linkedSetOf(), ComponentKey::toString)) }
     }
 
+    fun setAppTabs(componentKey: ComponentKey, tabIds: Set<String>) {
+        val key = componentKey.toString()
+        val configuration = getConfiguration()
+        saveConfiguration(
+            configuration.copy(
+                tabs = configuration.tabs.map { tab ->
+                    if (tab.isSystem) {
+                        tab
+                    } else if (tab.id in tabIds) {
+                        tab.copy(apps = tab.apps + key)
+                    } else {
+                        tab.copy(apps = tab.apps - key)
+                    }
+                },
+            ),
+        )
+    }
+
     fun isAppInTab(componentKey: ComponentKey, tabId: String): Boolean {
         val configuration = getConfiguration()
         return when (tabId) {
