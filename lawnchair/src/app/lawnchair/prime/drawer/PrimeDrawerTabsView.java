@@ -16,11 +16,17 @@ import android.widget.EditText;
 
 import androidx.annotation.Nullable;
 import android.app.AlertDialog;
+import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 
 import com.android.launcher3.R;
+import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.allapps.FloatingHeaderRow;
 import com.android.launcher3.allapps.FloatingHeaderView;
 import com.android.launcher3.util.Themes;
+import com.android.launcher3.views.ActivityContext;
+import com.android.launcher3.views.OptionsPopupView;
+import com.android.launcher3.logging.StatsLogManager.LauncherEvent;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -34,6 +40,8 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     private final PrimeDrawerTabsRepository mRepository;
     private final LinearLayout mTabsContainer;
     private boolean mIsScrolledOut;
+    private OptionsPopupView<?> mTabPopup;
+    private String mDraggingTabId;
 
     public PrimeDrawerTabsView(Context context) {
         this(context, null);
@@ -82,21 +90,29 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             pill.setOnLongClickListener(v -> {
                 v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 showTabMenu(parent, tab, pill);
+                mDraggingTabId = tabId;
                 v.startDragAndDrop(null, new DragShadowBuilder(v), tabId, 0);
                 return true;
             });
-            pill.setOnDragListener((v, event) -> handleTabDrag(event, parent));
+            pill.setOnDragListener((v, event) -> handleTabDrag(event));
         }
         addPill("+", false, () -> showCreateTabDialog(parent));
     }
 
-    private boolean handleTabDrag(DragEvent event, FloatingHeaderView parent) {
+    private boolean handleTabDrag(DragEvent event) {
         if (event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
+            if (mTabPopup != null) {
+                mTabPopup.close(false);
+                mTabPopup = null;
+            }
             View target = findTabAt(event.getX() + getScrollX());
             Object localState = event.getLocalState();
             if (target != null && localState instanceof String) {
-                moveTab((String) localState, (String) target.getTag(), parent);
+                moveTabView((String) localState, target);
             }
+        } else if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+            persistCurrentOrder();
+            mDraggingTabId = null;
         }
         return true;
     }
@@ -110,39 +126,64 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         return null;
     }
 
-    private void moveTab(String draggedId, String targetId, FloatingHeaderView parent) {
-        if (draggedId.equals(targetId)) return;
-        PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
-        ArrayList<String> ids = new ArrayList<>();
-        for (PrimeDrawerTab tab : configuration.getTabs()) ids.add(tab.getId());
-        int from = ids.indexOf(draggedId);
-        int to = ids.indexOf(targetId);
+    private void moveTabView(String draggedId, View target) {
+        View dragged = null;
+        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
+            View child = mTabsContainer.getChildAt(i);
+            if (draggedId.equals(child.getTag())) {
+                dragged = child;
+                break;
+            }
+        }
+        if (dragged == null || dragged == target) return;
+        int from = mTabsContainer.indexOfChild(dragged);
+        int to = mTabsContainer.indexOfChild(target);
         if (from < 0 || to < 0) return;
-        ids.remove(from);
-        ids.add(to, draggedId);
+        mTabsContainer.removeViewAt(from);
+        if (from < to) to--;
+        mTabsContainer.addView(dragged, to);
+    }
+
+    private void persistCurrentOrder() {
+        ArrayList<String> ids = new ArrayList<>();
+        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
+            Object tag = mTabsContainer.getChildAt(i).getTag();
+            if (tag instanceof String) ids.add((String) tag);
+        }
         mRepository.reorderTabs(ids);
-        refresh(parent);
     }
 
     private void showTabMenu(FloatingHeaderView parent, PrimeDrawerTab tab, View anchor) {
-        boolean system = tab.isSystem();
-        String[] items = system
-                ? new String[] {getContext().getString(R.string.prime_tab_set_default)}
-                : new String[] {
-                        getContext().getString(R.string.prime_tab_rename),
-                        getContext().getString(R.string.prime_tab_reorganize),
-                        getContext().getString(R.string.prime_tab_set_default),
-                        getContext().getString(R.string.prime_tab_apps),
-                        getContext().getString(R.string.prime_tab_advanced),
-                        getContext().getString(R.string.prime_tab_delete)
-                };
-        new AlertDialog.Builder(getContext())
-                .setTitle(tab.isSystem() ? getSystemTabLabel(tab) : tab.getTitle())
-                .setItems(items, (dialog, which) -> {
-                    int defaultIndex = system ? 0 : 2;
-                    if (which == defaultIndex) mRepository.setDefaultTab(tab.getId());
-                })
-                .show();
+        ActivityContext activityContext = ActivityContext.lookupContext(getContext());
+        if (activityContext == null) return;
+        ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
+        if (!tab.isSystem()) {
+            items.add(option(R.string.prime_tab_rename, v -> true));
+            items.add(option(R.string.prime_tab_reorganize, v -> true));
+        }
+        items.add(option(R.string.prime_tab_set_default, v -> {
+            mRepository.setDefaultTab(tab.getId());
+            return true;
+        }));
+        if (!tab.isSystem()) {
+            items.add(option(R.string.prime_tab_apps, v -> true));
+            items.add(option(R.string.prime_tab_advanced, v -> true));
+            items.add(option(R.string.prime_tab_delete, v -> true));
+        }
+
+        int[] location = new int[2];
+        anchor.getLocationOnScreen(location);
+        RectF target = new RectF(location[0], location[1],
+                location[0] + anchor.getWidth(), location[1] + anchor.getHeight());
+        mTabPopup = OptionsPopupView.show(activityContext, target, items, false);
+    }
+
+    private OptionsPopupView.OptionItem option(int labelRes, View.OnLongClickListener action) {
+        return new OptionsPopupView.OptionItem(
+                getContext().getString(labelRes),
+                new ColorDrawable(android.graphics.Color.TRANSPARENT),
+                LauncherEvent.IGNORE,
+                action);
     }
 
     private String getSystemTabLabel(PrimeDrawerTab tab) {
