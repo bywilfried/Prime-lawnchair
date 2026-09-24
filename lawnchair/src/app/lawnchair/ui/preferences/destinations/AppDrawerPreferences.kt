@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.lawnchair.preferences.PreferenceAdapter
 import app.lawnchair.preferences.getAdapter
+import app.lawnchair.preferences.rememberTransformAdapter
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.preferences2.preferenceManager2
 import app.lawnchair.ui.preferences.LocalIsExpandedScreen
@@ -45,7 +48,7 @@ import app.lawnchair.ui.preferences.components.NavigationActionPreference
 import app.lawnchair.ui.preferences.components.colorpreference.ColorPreference
 import app.lawnchair.ui.preferences.components.controls.SliderPreference
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
-import app.lawnchair.ui.preferences.components.controls.SwitchPreferenceWithPreview
+import app.lawnchair.ui.preferences.components.controls.SwitchPreferencePreviewCard
 import app.lawnchair.ui.preferences.components.controls.WarningPreference
 import app.lawnchair.ui.preferences.components.layout.ExpandAndShrink
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
@@ -75,9 +78,10 @@ fun AppDrawerPreferences(
         modifier = modifier,
     ) {
         val drawerListAdapter = prefs.drawerList.getAdapter()
+        val drawerTabsAdapter = prefs.drawerTabsEnabled.getAdapter()
         Column {
-            DrawerLayoutPreference(drawerListAdapter)
-            ExpandAndShrink(visible = drawerListAdapter.state.value) {
+            DrawerLayoutPreference(drawerListAdapter, drawerTabsAdapter)
+            ExpandAndShrink(visible = drawerListAdapter.state.value && !drawerTabsAdapter.state.value) {
                 AppDrawerFolderPreferenceItem()
             }
         }
@@ -215,78 +219,75 @@ fun AppDrawerPreferences(
 }
 
 @Composable
-private fun DrawerLayoutPreference(drawerListAdapter: PreferenceAdapter<Boolean>) {
-    SwitchPreferenceWithPreview(
-        label = stringResource(id = R.string.layout),
-        checked = !drawerListAdapter.state.value,
-        onCheckedChange = { drawerListAdapter.onChange(!it) },
-        disabledLabel = stringResource(id = R.string.feed_default),
-        disabledContent = {
-            Box(
-                modifier = Modifier
-                    .height(24.dp)
-                    .fillMaxWidth(0.8f)
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(16.dp),
-                    ),
-            )
-
-            Column(modifier = Modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(
-                    modifier = Modifier,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    repeat(4) {
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    CircleShape,
-                                ),
-                        )
-                    }
-                }
+private fun DrawerLayoutPreference(
+    drawerListAdapter: PreferenceAdapter<Boolean>,
+    drawerTabsAdapter: PreferenceAdapter<Boolean>,
+) {
+    val layoutModeAdapter = rememberTransformAdapter(
+        adapter = drawerListAdapter,
+        transformGet = { drawerList ->
+            when {
+                drawerTabsAdapter.state.value -> DrawerLayoutMode.TABS
+                drawerList -> DrawerLayoutMode.DEFAULT
+                else -> DrawerLayoutMode.CADDY
             }
         },
-        enabledLabel = stringResource(id = R.string.caddy_beta),
-        enabledContent = {
-            Box(
-                modifier = Modifier
-                    .height(24.dp)
-                    .fillMaxWidth(0.8f)
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(16.dp),
-                    ),
-            )
-            Row(modifier = Modifier, horizontalArrangement = Arrangement.SpaceBetween) {
-                repeat(2) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column(modifier = Modifier) {
-                        repeat(2) {
-                            Row(
-                                modifier = Modifier,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                repeat(2) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.surfaceVariant,
-                                                CircleShape,
-                                            ),
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
-            }
+        transformSet = { mode ->
+            drawerTabsAdapter.onChange(mode == DrawerLayoutMode.TABS)
+            mode != DrawerLayoutMode.CADDY
         },
     )
+    Column {
+        app.lawnchair.ui.preferences.components.layout.PreferenceGroupHeading(stringResource(id = R.string.layout))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            DrawerLayoutMode.entries.forEach { mode ->
+                SwitchPreferencePreviewCard(
+                    label = when (mode) {
+                        DrawerLayoutMode.DEFAULT -> stringResource(id = R.string.feed_default)
+                        DrawerLayoutMode.TABS -> stringResource(id = R.string.drawer_tabs)
+                        DrawerLayoutMode.CADDY -> stringResource(id = R.string.caddy_beta)
+                    },
+                    isSelected = layoutModeAdapter.state.value == mode,
+                    onClick = { layoutModeAdapter.onChange(mode) },
+                    modifier = Modifier.weight(1f),
+                ) { DrawerLayoutPreview(mode) }
+            }
+        }
+    }
 }
+
+@Composable
+private fun DrawerLayoutPreview(mode: DrawerLayoutMode) {
+    Box(
+        modifier = Modifier.height(18.dp).fillMaxWidth(0.8f).background(
+            MaterialTheme.colorScheme.surfaceVariant,
+            RoundedCornerShape(16.dp),
+        ),
+    )
+    if (mode == DrawerLayoutMode.TABS) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            repeat(3) {
+                Box(
+                    modifier = Modifier.width(24.dp).height(10.dp).background(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(8.dp),
+                    ),
+                )
+            }
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        repeat(if (mode == DrawerLayoutMode.CADDY) 2 else 4) {
+            Box(
+                modifier = Modifier
+                    .size(if (mode == DrawerLayoutMode.CADDY) 16.dp else 20.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+            )
+        }
+    }
+}
+
+private enum class DrawerLayoutMode { DEFAULT, TABS, CADDY }
