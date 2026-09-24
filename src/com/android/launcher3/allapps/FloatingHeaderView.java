@@ -419,6 +419,17 @@ public class FloatingHeaderView extends LinearLayout implements
         return !mTabsHidden;
     }
 
+    public void onPrimeDrawerTabSelected() {
+        if (mMainRV != null && mMainRV.getApps() != null) {
+            mMainRV.getApps().onAppsUpdated();
+            mMainRV.scrollToTop();
+        }
+        if (mWorkRV != null && mWorkRV.getApps() != null) {
+            mWorkRV.getApps().onAppsUpdated();
+            mWorkRV.scrollToTop();
+        }
+    }
+
     PersonalWorkSlidingTabStrip getTabLayout() {
         return mTabLayout;
     }

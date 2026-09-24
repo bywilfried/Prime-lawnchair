@@ -39,7 +39,7 @@
         android:paddingBottom="@dimen/all_apps_header_bottom_padding"
         android:orientation="vertical" >
 
-        <include layout="@layout/floating_header_content" />
+        <include layout="@layout/floating_header_content" />\n\n        <include layout="@layout/prime_drawer_tabs" />
 
         <include layout="@layout/all_apps_personal_work_tabs" />
 

@@ -1071,4 +1071,4 @@
     <string name="lawnchair_action_failed">Failed to trigger action</string>
 
     <string name="please_wait">Please wait…</string>
-</resources>
+    <string name="prime_tab_all">All</string>\n    <string name="prime_tab_unclassified">Unclassified</string>\n</resources>
