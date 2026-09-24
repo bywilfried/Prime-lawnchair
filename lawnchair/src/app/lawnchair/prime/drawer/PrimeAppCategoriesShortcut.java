@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.R;
+import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.popup.SystemShortcut;
@@ -29,7 +30,7 @@ public class PrimeAppCategoriesShortcut extends SystemShortcut<ActivityContext> 
     public static final Factory<ActivityContext> FACTORY = (context, itemInfo, originalView) -> {
         Context androidContext = context.asContext();
         if (!PreferenceManager.getInstance(androidContext).getDrawerTabsEnabled().get()
-                || !(itemInfo instanceof AppInfo)) {
+                || itemInfo.itemType != LauncherSettings.Favorites.ITEM_TYPE_APPLICATION) {
             return null;
         }
         PrimeDrawerTabsConfiguration configuration =
@@ -48,13 +49,13 @@ public class PrimeAppCategoriesShortcut extends SystemShortcut<ActivityContext> 
 
     @Override
     public void onClick(View view) {
-        if (!(mItemInfo instanceof AppInfo appInfo)) return;
+        if (mItemInfo.getTargetComponent() == null) return;
         dismissTaskMenuView();
 
         Context context = view.getContext();
         PrimeDrawerTabsRepository repository = new PrimeDrawerTabsRepository(context);
         PrimeDrawerTabsConfiguration configuration = repository.getConfiguration();
-        ComponentKey appKey = new ComponentKey(appInfo.getTargetComponent(), appInfo.user);
+        ComponentKey appKey = new ComponentKey(mItemInfo.getTargetComponent(), mItemInfo.user);
 
         LinearLayout list = new LinearLayout(context);
         list.setOrientation(LinearLayout.VERTICAL);
