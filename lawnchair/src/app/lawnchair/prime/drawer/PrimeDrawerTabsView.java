@@ -11,6 +11,7 @@ import android.view.DragEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -46,6 +47,9 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     private String mDraggingTabId;
     private float mLongPressDownX;
     private float mLastTouchRawX;
+    private float mLastTouchRawY;
+    private View mGesturePill;
+    private String mGestureTabId;
     private boolean mLongPressActive;
     private final int mTouchSlop;
 
@@ -63,6 +67,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         mTabsContainer.setGravity(Gravity.CENTER_VERTICAL);
         addView(mTabsContainer, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
         setHorizontalScrollBarEnabled(false);
+        setOnTouchListener((v, event) -> handleRowTouch(event));
     }
 
     @Override
@@ -96,6 +101,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             pill.setTag(tabId);
             pill.setOnTouchListener((v, event) -> {
                 mLastTouchRawX = event.getRawX();
+                mLastTouchRawY = event.getRawY();
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mLongPressDownX = event.getRawX();
                     mLongPressActive = false;
@@ -120,12 +126,84 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 mLongPressActive = true;
                 mLongPressDownX = mLastTouchRawX;
+                mGesturePill = v;
+                mGestureTabId = tabId;
                 showTabMenu(parent, tab, pill);
                 return true;
             });
             pill.setOnDragListener((v, event) -> handleTabDrag(event));
         }
         addPill("+", false, () -> showCreateTabDialog(parent));
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        mLastTouchRawX = event.getRawX();
+        mLastTouchRawY = event.getRawY();
+        if (mLongPressActive && mGesturePill != null && mGestureTabId != null
+                && event.getActionMasked() == MotionEvent.ACTION_MOVE
+                && Math.abs(event.getRawX() - mLongPressDownX) > mTouchSlop) {
+            if (mTabPopup != null) {
+                mTabPopup.close(false);
+                mTabPopup = null;
+            }
+            mLongPressActive = false;
+            mDraggingTabId = mGestureTabId;
+            getParent().requestDisallowInterceptTouchEvent(true);
+            reorderDraggedTab(event.getRawX());
+            return true;
+        }
+        if (mDraggingTabId != null) {
+            if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+                reorderDraggedTab(event.getRawX());
+                return true;
+            }
+            if (event.getActionMasked() == MotionEvent.ACTION_UP
+                    || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                persistCurrentOrder();
+                mDraggingTabId = null;
+                mGesturePill = null;
+                mGestureTabId = null;
+                getParent().requestDisallowInterceptTouchEvent(false);
+                return true;
+            }
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    private boolean handleRowTouch(MotionEvent event) {
+        return false;
+    }
+
+    private void reorderDraggedTab(float rawX) {
+        View dragged = mGesturePill;
+        if (dragged == null) return;
+        int[] containerLocation = new int[2];
+        mTabsContainer.getLocationOnScreen(containerLocation);
+        float x = rawX - containerLocation[0];
+        int from = mTabsContainer.indexOfChild(dragged);
+        if (from < 0) return;
+
+        int desired = from;
+        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
+            View child = mTabsContainer.getChildAt(i);
+            if (child == dragged || !(child.getTag() instanceof String)) continue;
+            float center = (child.getLeft() + child.getRight()) / 2f;
+            if (x < center) {
+                desired = i;
+                break;
+            }
+            desired = i + 1;
+        }
+        int tabCount = 0;
+        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
+            if (mTabsContainer.getChildAt(i).getTag() instanceof String) tabCount++;
+        }
+        desired = Math.max(0, Math.min(desired, tabCount - 1));
+        if (desired == from) return;
+        mTabsContainer.removeView(dragged);
+        if (desired > mTabsContainer.getChildCount() - 1) desired = mTabsContainer.getChildCount() - 1;
+        mTabsContainer.addView(dragged, desired);
     }
 
     private boolean handleTabDrag(DragEvent event) {
@@ -187,17 +265,17 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         if (activityContext == null) return;
         ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
         if (!tab.isSystem()) {
-            items.add(option(R.string.prime_tab_rename, v -> true));
-            items.add(option(R.string.prime_tab_reorganize, v -> true));
+            items.add(optionUnimplemented(R.string.prime_tab_rename));
+            items.add(optionUnimplemented(R.string.prime_tab_reorganize));
         }
         items.add(option(R.string.prime_tab_set_default, v -> {
             mRepository.setDefaultTab(tab.getId());
             return true;
         }));
         if (!tab.isSystem()) {
-            items.add(option(R.string.prime_tab_apps, v -> true));
-            items.add(option(R.string.prime_tab_advanced, v -> true));
-            items.add(option(R.string.prime_tab_delete, v -> true));
+            items.add(optionUnimplemented(R.string.prime_tab_apps));
+            items.add(optionUnimplemented(R.string.prime_tab_advanced));
+            items.add(optionUnimplemented(R.string.prime_tab_delete));
         }
 
         int[] location = new int[2];
@@ -205,6 +283,14 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         RectF target = new RectF(location[0], location[1],
                 location[0] + anchor.getWidth(), location[1] + anchor.getHeight());
         mTabPopup = OptionsPopupView.show(activityContext, target, items, false);
+    }
+
+    private OptionsPopupView.OptionItem optionUnimplemented(int labelRes) {
+        return new OptionsPopupView.OptionItem(
+                getContext().getString(labelRes) + "*",
+                new ColorDrawable(android.graphics.Color.TRANSPARENT),
+                LauncherEvent.IGNORE,
+                v -> false);
     }
 
     private OptionsPopupView.OptionItem option(int labelRes, View.OnLongClickListener action) {
