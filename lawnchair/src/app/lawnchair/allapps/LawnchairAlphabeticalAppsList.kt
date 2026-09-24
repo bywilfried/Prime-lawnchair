@@ -10,6 +10,7 @@ import app.lawnchair.data.folder.FolderEntry
 import app.lawnchair.data.folder.model.FolderViewModel
 import app.lawnchair.launcher
 import app.lawnchair.preferences.PreferenceManager
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.preferences2.PreferenceManager2
 import app.lawnchair.util.categorizeAppsWithSystemAndGoogle
 import app.lawnchair.util.observeOnce
@@ -41,6 +42,7 @@ class LawnchairAlphabeticalAppsList<T>(
     private var hiddenApps: Set<String> = setOf()
     private val prefs2 = PreferenceManager2.getInstance(context)
     private val prefs = PreferenceManager.getInstance(context)
+    private val primeTabsRepository = PrimeDrawerTabsRepository(context)
 
     private val viewModel = FolderViewModel(
         (context as? ComponentActivity)?.application ?: context.launcher.application,
@@ -79,8 +81,14 @@ class LawnchairAlphabeticalAppsList<T>(
     override fun updateItemFilter(itemFilter: Predicate<ItemInfo>?) {
         mItemFilter = Predicate { info ->
             require(info is AppInfo) { "`info` must be an instance of `AppInfo`." }
-            val componentKey = info.toComponentKey().toString()
-            (itemFilter?.test(info) != false) && !hiddenApps.contains(componentKey)
+            val componentKey = info.toComponentKey()
+            val isVisible = !hiddenApps.contains(componentKey.toString())
+            val isInPrimeTab = !prefs.drawerTabsEnabled.get() ||
+                primeTabsRepository.isAppInTab(
+                    componentKey,
+                    primeTabsRepository.getConfiguration().selectedTabId,
+                )
+            (itemFilter?.test(info) != false) && isVisible && isInPrimeTab
         }
         onAppsUpdated()
     }
@@ -89,6 +97,12 @@ class LawnchairAlphabeticalAppsList<T>(
         if (appList.isNullOrEmpty()) return startPosition
         val drawerListDefault = prefs.drawerList.get()
         filteredList.clear()
+
+        // Prime Tabs owns a separate organization. Never project Lawnchair's classic
+        // drawer folders or Caddy categories while this mode is active.
+        if (prefs.drawerTabsEnabled.get()) {
+            return super.addAppsWithSections(appList, startPosition)
+        }
         var position = startPosition
 
         // Show app drawer folders only on main profile, to prevent state complexity
