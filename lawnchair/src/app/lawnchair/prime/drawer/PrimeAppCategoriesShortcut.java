@@ -54,7 +54,7 @@ public class PrimeAppCategoriesShortcut extends SystemShortcut<ActivityContext> 
         Context context = view.getContext();
         PrimeDrawerTabsRepository repository = new PrimeDrawerTabsRepository(context);
         PrimeDrawerTabsConfiguration configuration = repository.getConfiguration();
-        ComponentKey appKey = appInfo.toComponentKey();
+        ComponentKey appKey = new ComponentKey(appInfo.componentName, appInfo.user);
 
         LinearLayout list = new LinearLayout(context);
         list.setOrientation(LinearLayout.VERTICAL);
