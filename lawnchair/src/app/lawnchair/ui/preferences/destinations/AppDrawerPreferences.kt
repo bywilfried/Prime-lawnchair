@@ -19,11 +19,11 @@ package app.lawnchair.ui.preferences.destinations
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -293,24 +293,31 @@ private fun DrawerLayoutPreference(
 
     Column {
         app.lawnchair.ui.preferences.components.layout.PreferenceGroupHeading(stringResource(id = R.string.layout))
-        Row(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center,
         ) {
-            DrawerLayoutMode.entries.forEach { mode ->
-                SwitchPreferencePreviewCard(
-                    label = when (mode) {
-                        DrawerLayoutMode.DEFAULT -> stringResource(id = R.string.feed_default)
-                        DrawerLayoutMode.TABS -> stringResource(id = R.string.drawer_tabs)
-                        DrawerLayoutMode.CADDY -> stringResource(id = R.string.caddy_beta)
-                    },
-                    isSelected = layoutModeAdapter.state.value == mode,
-                    onClick = { layoutModeAdapter.onChange(mode) },
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .widthIn(max = maxPreviewWidth),
-                    maxPreviewHeight = maxPreviewHeight,
-                ) { DrawerLayoutPreview(mode) }
+            val spacing = 12.dp
+            val availableCardWidth = (maxWidth - spacing * 2) / 3
+            val cardWidth = minOf(availableCardWidth, maxPreviewWidth)
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(spacing),
+                verticalAlignment = Alignment.Top,
+            ) {
+                DrawerLayoutMode.entries.forEach { mode ->
+                    SwitchPreferencePreviewCard(
+                        label = when (mode) {
+                            DrawerLayoutMode.DEFAULT -> stringResource(id = R.string.feed_default)
+                            DrawerLayoutMode.TABS -> stringResource(id = R.string.drawer_tabs)
+                            DrawerLayoutMode.CADDY -> stringResource(id = R.string.caddy_beta)
+                        },
+                        isSelected = layoutModeAdapter.state.value == mode,
+                        onClick = { layoutModeAdapter.onChange(mode) },
+                        modifier = Modifier.width(cardWidth),
+                        maxPreviewHeight = maxPreviewHeight,
+                    ) { DrawerLayoutPreview(mode) }
+                }
             }
         }
     }
