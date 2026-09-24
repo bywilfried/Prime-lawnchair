@@ -14,6 +14,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.widget.CheckBox;
+import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 import android.app.AlertDialog;
@@ -24,6 +26,8 @@ import com.android.launcher3.R;
 import com.android.launcher3.AbstractFloatingView;
 import com.android.launcher3.allapps.FloatingHeaderRow;
 import com.android.launcher3.allapps.FloatingHeaderView;
+import com.android.launcher3.allapps.ActivityAllAppsContainerView;
+import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 import com.android.launcher3.views.OptionsPopupView;
@@ -31,6 +35,10 @@ import com.android.launcher3.logging.StatsLogManager.LauncherEvent;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import app.lawnchair.preferences.PreferenceManager;
 
@@ -233,7 +241,10 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             return true;
         }));
         if (!tab.isSystem()) {
-            items.add(optionUnimplemented(R.string.prime_tab_apps));
+            items.add(option(getContext().getString(R.string.prime_tab_apps), v -> {
+                showAppsDialog(parent, tab);
+                return true;
+            }));
             items.add(optionUnimplemented(R.string.prime_tab_advanced));
             items.add(optionUnimplemented(R.string.prime_tab_delete));
         }
@@ -243,6 +254,63 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         RectF target = new RectF(location[0], location[1],
                 location[0] + anchor.getWidth(), location[1] + anchor.getHeight());
         mTabPopup = OptionsPopupView.show(activityContext, target, items, false);
+    }
+
+    private void showAppsDialog(FloatingHeaderView parent, PrimeDrawerTab tab) {
+        if (!(parent.getParent() instanceof ActivityAllAppsContainerView)) return;
+        ActivityAllAppsContainerView<?> allApps = (ActivityAllAppsContainerView<?>) parent.getParent();
+        AppInfo[] apps = allApps.getAppsStore().getApps();
+        Arrays.sort(apps = apps.clone(), Comparator.comparing(
+                app -> app.title == null ? "" : app.title.toString(),
+                String.CASE_INSENSITIVE_ORDER));
+
+        Set<String> selected = new HashSet<>(tab.getApps());
+        LinearLayout list = new LinearLayout(getContext());
+        list.setOrientation(LinearLayout.VERTICAL);
+        int horizontalPadding = dp(16);
+        list.setPadding(horizontalPadding, dp(8), horizontalPadding, dp(8));
+
+        for (AppInfo app : apps) {
+            CheckBox checkBox = new CheckBox(getContext());
+            String key = app.toComponentKey().toString();
+            checkBox.setText(app.title);
+            checkBox.setTag(key);
+            checkBox.setChecked(selected.contains(key));
+            checkBox.setPadding(dp(8), dp(4), dp(8), dp(4));
+            list.addView(checkBox, new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        }
+
+        ScrollView scroll = new ScrollView(getContext());
+        scroll.addView(list);
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setTitle(tab.getTitle())
+                .setView(scroll)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok, null)
+                .create();
+        dialog.setOnShowListener(ignored ->
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+                    ArrayList<String> keys = new ArrayList<>();
+                    for (int i = 0; i < list.getChildCount(); i++) {
+                        View child = list.getChildAt(i);
+                        if (child instanceof CheckBox && ((CheckBox) child).isChecked()) {
+                            keys.add((String) child.getTag());
+                        }
+                    }
+                    mRepository.setTabApps(tab.getId(), keys);
+                    dialog.dismiss();
+                    parent.onPrimeDrawerTabSelected();
+                }));
+        dialog.show();
+    }
+
+    private OptionsPopupView.OptionItem option(String label, View.OnLongClickListener action) {
+        return new OptionsPopupView.OptionItem(
+                label,
+                new ColorDrawable(android.graphics.Color.TRANSPARENT),
+                LauncherEvent.IGNORE,
+                action);
     }
 
     private OptionsPopupView.OptionItem optionUnimplemented(int labelRes) {
