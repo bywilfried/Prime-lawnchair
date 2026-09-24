@@ -46,6 +46,8 @@ import app.lawnchair.ui.preferences.components.AppDrawerHapticFeedbackPreference
 import app.lawnchair.ui.preferences.components.NavigationActionPreference
 import app.lawnchair.ui.preferences.components.colorpreference.ColorPreference
 import app.lawnchair.ui.preferences.components.controls.SliderPreference
+import app.lawnchair.ui.preferences.components.controls.ListPreference
+import app.lawnchair.ui.preferences.components.controls.ListPreferenceEntry
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
 import app.lawnchair.ui.preferences.components.controls.SwitchPreferencePreviewCard
 import app.lawnchair.ui.preferences.components.controls.WarningPreference
@@ -82,6 +84,25 @@ fun AppDrawerPreferences(
             DrawerLayoutPreference(drawerListAdapter, drawerTabsAdapter)
             ExpandAndShrink(visible = drawerListAdapter.state.value && !drawerTabsAdapter.state.value) {
                 AppDrawerFolderPreferenceItem()
+            }
+            ExpandAndShrink(visible = drawerTabsAdapter.state.value) {
+                PreferenceGroup(heading = stringResource(id = R.string.prime_tabs_settings)) {
+                    ListPreference(
+                        adapter = prefs.drawerTabsOpenMode.getAdapter(),
+                        label = stringResource(id = R.string.prime_tabs_open_behavior),
+                        entries = listOf(
+                            ListPreferenceEntry("first") {
+                                stringResource(id = R.string.prime_tabs_open_first)
+                            },
+                            ListPreferenceEntry("last") {
+                                stringResource(id = R.string.prime_tabs_open_last)
+                            },
+                            ListPreferenceEntry("default") {
+                                stringResource(id = R.string.prime_tabs_open_default)
+                            },
+                        ),
+                    )
+                }
             }
         }
         val hiddenApps = prefs2.hiddenApps.getAdapter().state.value

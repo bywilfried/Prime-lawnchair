@@ -179,6 +179,26 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         return super.dispatchTouchEvent(event);
     }
 
+    public void onDrawerOpening() {
+        if (!mPrefs.getDrawerTabsEnabled().get()) return;
+        PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
+        String openMode = mPrefs.getDrawerTabsOpenMode().get();
+        String targetTabId = configuration.getSelectedTabId();
+        if ("first".equals(openMode) && !configuration.getTabs().isEmpty()) {
+            targetTabId = configuration.getTabs().get(0).getId();
+        } else if ("default".equals(openMode)) {
+            targetTabId = configuration.getDefaultTabId();
+        }
+        if (!targetTabId.equals(configuration.getSelectedTabId())) {
+            mRepository.setSelectedTab(targetTabId);
+        }
+        if (getParent() instanceof FloatingHeaderView) {
+            FloatingHeaderView parent = (FloatingHeaderView) getParent();
+            refresh(parent);
+            parent.onPrimeDrawerTabSelected();
+        }
+    }
+
     private boolean handleRowTouch(MotionEvent event) {
         return false;
     }
@@ -238,7 +258,6 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 showRenameTabDialog(parent, tab);
                 return true;
             }));
-            items.add(optionUnimplemented(R.string.prime_tab_reorganize));
         }
         items.add(option(R.string.prime_tab_set_default, v -> {
             mRepository.setDefaultTab(tab.getId());

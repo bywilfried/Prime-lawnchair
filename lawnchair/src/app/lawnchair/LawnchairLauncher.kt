@@ -41,6 +41,7 @@ import app.lawnchair.gestures.config.GestureHandlerConfig
 import app.lawnchair.gestures.ui.LawnchairShortcutActivity
 import app.lawnchair.nexuslauncher.OverlayCallbackImpl
 import app.lawnchair.preferences.PreferenceManager
+import app.lawnchair.prime.drawer.PrimeDrawerTabsView
 import app.lawnchair.prime.drawer.PrimeAppCategoriesShortcut
 import app.lawnchair.preferences2.PreferenceManager2
 import app.lawnchair.preferences2.firstCached
@@ -126,6 +127,15 @@ class LawnchairLauncher : QuickstepLauncher() {
         }
         override fun onStateTransitionComplete(finalState: LauncherState) {}
     }
+    private val primeDrawerTabsStateListener = object : StateManager.StateListener<LauncherState> {
+        override fun onStateTransitionStart(toState: LauncherState) {
+            if (toState is AllAppsState && prefs.drawerTabsEnabled.get()) {
+                findViewById<PrimeDrawerTabsView?>(R.id.prime_drawer_tabs)?.onDrawerOpening()
+            }
+        }
+
+        override fun onStateTransitionComplete(finalState: LauncherState) {}
+    }
     private val statusBarClockListener = object : StateManager.StateListener<LauncherState> {
         override fun onStateTransitionStart(toState: LauncherState) {
             when (toState) {
@@ -168,6 +178,7 @@ class LawnchairLauncher : QuickstepLauncher() {
             defaultOverlay.setEnableFeed(enable)
         }.launchIn(scope = lifecycleScope)
         launcher.stateManager.addStateListener(clearSearchStateListener)
+        launcher.stateManager.addStateListener(primeDrawerTabsStateListener)
 
         if (prefs.autoLaunchRoot.get()) {
             lifecycleScope.launch {
