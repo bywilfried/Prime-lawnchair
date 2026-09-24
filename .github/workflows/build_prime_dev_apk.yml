@@ -1,0 +1,45 @@
+name: Build Prime Dev APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-dev-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Write signing configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${{ secrets.KEYSTORE }}"
+          test -n "${{ secrets.KEYSTORE_PASSWORD }}"
+          test -n "${{ secrets.KEY_ALIAS }}"
+          test -n "${{ secrets.KEY_PASSWORD }}"
+          printf '%s' "${{ secrets.KEYSTORE }}" | base64 --decode > "$GITHUB_WORKSPACE/key.jks"
+          {
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}"
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+            echo "storeFile=$GITHUB_WORKSPACE/key.jks"
+          } > keystore.properties
+
+      - name: Build signed dev APK
+        run: ./gradlew assembleLawnWithQuickstepGithubDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: Prime-Launcher-Dev-APK
+          path: build/outputs/apk/lawn/withQuickstep/github/debug/*.apk
+          if-no-files-found: error
