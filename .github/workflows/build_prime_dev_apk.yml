@@ -22,15 +22,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${{ secrets.KEYSTORE }}"
-          test -n "${{ secrets.KEYSTORE_PASSWORD }}"
-          test -n "${{ secrets.KEY_ALIAS }}"
-          test -n "${{ secrets.KEY_PASSWORD }}"
-          printf '%s' "${{ secrets.KEYSTORE }}" | base64 --decode > "$GITHUB_WORKSPACE/key.jks"
+          test -n "${{ secrets.PRIME_KEYSTORE_BASE64 }}"
+          test -n "${{ secrets.PRIME_KEYSTORE_PASSWORD }}"
+          test -n "${{ secrets.PRIME_KEY_ALIAS }}"
+          test -n "${{ secrets.PRIME_KEY_PASSWORD }}"
+          printf '%s' "${{ secrets.PRIME_KEYSTORE_BASE64 }}" | base64 --decode > "$GITHUB_WORKSPACE/key.jks"
           {
-            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}"
-            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
-            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+            echo "storePassword=${{ secrets.PRIME_KEYSTORE_PASSWORD }}"
+            echo "keyAlias=${{ secrets.PRIME_KEY_ALIAS }}"
+            echo "keyPassword=${{ secrets.PRIME_KEY_PASSWORD }}"
             echo "storeFile=$GITHUB_WORKSPACE/key.jks"
           } > keystore.properties
 
