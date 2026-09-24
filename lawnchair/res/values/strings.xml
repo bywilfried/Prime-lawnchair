@@ -1071,4 +1071,8 @@
     <string name="lawnchair_action_failed">Failed to trigger action</string>
 
     <string name="please_wait">Please wait…</string>
-    <string name="prime_tab_all">All</string>\n    <string name="prime_tab_unclassified">Unclassified</string>\n</resources>
+    <string name="prime_tab_all">All</string>\n    <string name="prime_tab_unclassified">Unclassified</string>\n    <string name="prime_tab_create">Create tab</string>
+    <string name="prime_tab_name_hint">Tab name</string>
+    <string name="prime_tab_create_action">Create</string>
+    <string name="prime_tab_name_required">Enter a tab name</string>
+</resources>

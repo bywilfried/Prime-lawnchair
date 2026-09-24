@@ -3,13 +3,17 @@ package app.lawnchair.prime.drawer;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.content.DialogInterface;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.EditText;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.android.launcher3.R;
 import com.android.launcher3.allapps.FloatingHeaderRow;
@@ -72,9 +76,46 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 parent.onPrimeDrawerTabSelected();
             });
         }
-        addPill("+", false, () -> {
-            // Creation UI is intentionally implemented with the CRUD step.
+        addPill("+", false, () -> showCreateTabDialog(parent));
+    }
+
+    private void showCreateTabDialog(FloatingHeaderView parent) {
+        EditText input = new EditText(getContext());
+        input.setHint(R.string.prime_tab_name_hint);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+        int horizontalPadding = dp(24);
+        LinearLayout container = new LinearLayout(getContext());
+        container.setPadding(horizontalPadding, 0, horizontalPadding, 0);
+        container.addView(input, new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setTitle(R.string.prime_tab_create)
+                .setView(container)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.prime_tab_create_action, null)
+                .create();
+        dialog.setOnShowListener(ignored -> {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String title = input.getText().toString().trim();
+                if (title.isEmpty()) {
+                    input.setError(getContext().getString(R.string.prime_tab_name_required));
+                    return;
+                }
+                PrimeDrawerTab tab = mRepository.createTab(title);
+                mRepository.setSelectedTab(tab.getId());
+                dialog.dismiss();
+                refresh(parent);
+                parent.onPrimeDrawerTabSelected();
+                post(() -> fullScroll(FOCUS_RIGHT));
+            });
+            input.requestFocus();
+            dialog.getWindow().setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         });
+        dialog.show();
     }
 
     private void addPill(String label, boolean selected, Runnable action) {
