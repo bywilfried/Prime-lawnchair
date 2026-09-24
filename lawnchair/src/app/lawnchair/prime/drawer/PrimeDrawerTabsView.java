@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
+import android.util.TypedValue;
 
 import androidx.annotation.Nullable;
 import android.app.AlertDialog;
@@ -274,6 +275,15 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             CheckBox checkBox = new CheckBox(getContext());
             String key = app.toComponentKey().toString();
             checkBox.setText(app.title);
+            TypedValue textColor = new TypedValue();
+            if (getContext().getTheme().resolveAttribute(
+                    android.R.attr.textColorPrimary, textColor, true)) {
+                if (textColor.resourceId != 0) {
+                    checkBox.setTextColor(getContext().getColorStateList(textColor.resourceId));
+                } else {
+                    checkBox.setTextColor(textColor.data);
+                }
+            }
             checkBox.setTag(key);
             checkBox.setChecked(selected.contains(key));
             checkBox.setPadding(dp(8), dp(4), dp(8), dp(4));
