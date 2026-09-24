@@ -1311,7 +1311,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
         return getActiveAppsRecyclerView();
     }
 
-    /** Installs Prime horizontal tab swipes on app-list RecyclerViews only. */
+    /** Installs Prime horizontal tab swipes on the actual app-list area only. */
     public void setPrimeDrawerSwipeListener(Consumer<Boolean> onSwipe) {
         if (mPrimeDrawerSwipeListener != null) {
             for (int type : new int[]{AdapterHolder.MAIN, AdapterHolder.WORK}) {
@@ -1325,12 +1325,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             private float downX;
             private float downY;
             private boolean horizontalSwipe;
-
-            private void reset(AllAppsRecyclerView rv) {
-                horizontalSwipe = false;
-                rv.animate().cancel();
-                rv.animate().translationX(0f).setDuration(160).start();
-            }
+            private boolean validAppAreaGesture;
 
             @Override
             public boolean onInterceptTouchEvent(@NonNull RecyclerView recycler, @NonNull MotionEvent e) {
@@ -1340,21 +1335,21 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
                         downX = e.getX();
                         downY = e.getY();
                         horizontalSwipe = false;
-                        rv.animate().cancel();
+                        // FloatingHeaderView forwards header touches to the RecyclerView. Those
+                        // arrive outside its local viewport; reject them so search/tabs can scroll.
+                        validAppAreaGesture = downX >= 0 && downX <= rv.getWidth()
+                                && downY >= 0 && downY <= rv.getHeight();
                         return false;
                     case MotionEvent.ACTION_MOVE:
+                        if (!validAppAreaGesture) return false;
                         float dx = e.getX() - downX;
                         float dy = e.getY() - downY;
                         if (!horizontalSwipe
-                                && Math.abs(dx) > touchSlop
-                                && Math.abs(dx) > Math.abs(dy) * 1.15f) {
+                                && Math.abs(dx) > touchSlop * 1.5f
+                                && Math.abs(dx) > Math.abs(dy) * 1.25f) {
                             horizontalSwipe = true;
                         }
-                        if (horizontalSwipe) {
-                            rv.setTranslationX(dx * 0.42f);
-                            return true;
-                        }
-                        return false;
+                        return horizontalSwipe;
                     default:
                         return false;
                 }
@@ -1363,36 +1358,19 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             @Override
             public void onTouchEvent(@NonNull RecyclerView recycler, @NonNull MotionEvent e) {
                 AllAppsRecyclerView rv = (AllAppsRecyclerView) recycler;
-                if (!horizontalSwipe) return;
-
-                if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {
-                    rv.setTranslationX((e.getX() - downX) * 0.42f);
-                    return;
-                }
+                if (!horizontalSwipe || !validAppAreaGesture) return;
 
                 if (e.getActionMasked() == MotionEvent.ACTION_UP) {
                     float dx = e.getX() - downX;
                     float threshold = Math.max(touchSlop * 3f, rv.getWidth() * 0.12f);
                     if (Math.abs(dx) >= threshold) {
-                        final boolean swipeLeft = dx < 0;
-                        final float exitX = swipeLeft ? -rv.getWidth() * 0.18f : rv.getWidth() * 0.18f;
-                        rv.animate().cancel();
-                        rv.animate()
-                                .translationX(exitX)
-                                .alpha(0.82f)
-                                .setDuration(90)
-                                .withEndAction(() -> {
-                                    rv.setTranslationX(0f);
-                                    rv.setAlpha(1f);
-                                    onSwipe.accept(swipeLeft);
-                                })
-                                .start();
-                    } else {
-                        reset(rv);
+                        onSwipe.accept(dx < 0);
                     }
                     horizontalSwipe = false;
+                    validAppAreaGesture = false;
                 } else if (e.getActionMasked() == MotionEvent.ACTION_CANCEL) {
-                    reset(rv);
+                    horizontalSwipe = false;
+                    validAppAreaGesture = false;
                 }
             }
         };
