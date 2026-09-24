@@ -324,31 +324,57 @@ private fun DrawerLayoutPreference(
 
 @Composable
 private fun DrawerLayoutPreview(mode: DrawerLayoutMode) {
-    Box(
-        modifier = Modifier.height(18.dp).fillMaxWidth(0.8f).background(
-            MaterialTheme.colorScheme.surfaceVariant,
-            RoundedCornerShape(16.dp),
-        ),
-    )
-    if (mode == DrawerLayoutMode.TABS) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            repeat(3) {
-                Box(
-                    modifier = Modifier.width(24.dp).height(10.dp).background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(8.dp),
-                    ),
-                )
-            }
-        }
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        repeat(if (mode == DrawerLayoutMode.CADDY) 2 else 4) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // The original preview was designed inside a 136 x 96 dp content area
+        // (160 x 120 card minus 12 dp padding on every side). Scale every element
+        // from that reference so three-column previews keep the same proportions.
+        val scale = minOf(maxWidth / 136.dp, maxHeight / 96.dp)
+        val barWidth = 108.dp * scale
+        val barHeight = 18.dp * scale
+        val iconSize = 20.dp * scale
+        val iconSpacing = 8.dp * scale
+        val tabWidth = 24.dp * scale
+        val tabHeight = 10.dp * scale
+        val tabSpacing = 4.dp * scale
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Box(
                 modifier = Modifier
-                    .size(if (mode == DrawerLayoutMode.CADDY) 16.dp else 20.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                    .width(barWidth)
+                    .height(barHeight)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(16.dp * scale),
+                    ),
             )
+            if (mode == DrawerLayoutMode.TABS) {
+                Row(horizontalArrangement = Arrangement.spacedBy(tabSpacing)) {
+                    repeat(3) {
+                        Box(
+                            modifier = Modifier
+                                .width(tabWidth)
+                                .height(tabHeight)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(8.dp * scale),
+                                ),
+                        )
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(iconSpacing)) {
+                repeat(if (mode == DrawerLayoutMode.CADDY) 2 else 4) {
+                    Box(
+                        modifier = Modifier
+                            .size(if (mode == DrawerLayoutMode.CADDY) 16.dp * scale else iconSize)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                    )
+                }
+            }
         }
     }
 }
