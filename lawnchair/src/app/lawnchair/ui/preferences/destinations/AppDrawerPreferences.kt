@@ -315,7 +315,6 @@ private fun DrawerLayoutPreference(
                         isSelected = layoutModeAdapter.state.value == mode,
                         onClick = { layoutModeAdapter.onChange(mode) },
                         modifier = Modifier.width(cardWidth),
-                        maxPreviewHeight = maxPreviewHeight,
                     ) { DrawerLayoutPreview(mode) }
                 }
             }
