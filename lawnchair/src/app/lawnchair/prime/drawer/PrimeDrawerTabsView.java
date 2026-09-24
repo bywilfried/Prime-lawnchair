@@ -7,11 +7,9 @@ import android.content.DialogInterface;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
-import android.view.DragEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -114,7 +112,9 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                     }
                     mLongPressActive = false;
                     mDraggingTabId = tabId;
-                    v.startDragAndDrop(null, new DragShadowBuilder(v), tabId, 0);
+                    mGesturePill = v;
+                    mGestureTabId = tabId;
+                    reorderDraggedTab(event.getRawX());
                     return true;
                 } else if (event.getActionMasked() == MotionEvent.ACTION_UP
                         || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
@@ -131,7 +131,6 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 showTabMenu(parent, tab, pill);
                 return true;
             });
-            pill.setOnDragListener((v, event) -> handleTabDrag(event));
         }
         addPill("+", false, () -> showCreateTabDialog(parent));
     }
@@ -178,76 +177,37 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     private void reorderDraggedTab(float rawX) {
         View dragged = mGesturePill;
         if (dragged == null) return;
-        int[] containerLocation = new int[2];
-        mTabsContainer.getLocationOnScreen(containerLocation);
-        float x = rawX - containerLocation[0];
+
         int from = mTabsContainer.indexOfChild(dragged);
         if (from < 0) return;
 
-        int desired = from;
-        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
-            View child = mTabsContainer.getChildAt(i);
-            if (child == dragged || !(child.getTag() instanceof String)) continue;
-            float center = (child.getLeft() + child.getRight()) / 2f;
-            if (x < center) {
-                desired = i;
-                break;
-            }
-            desired = i + 1;
-        }
+        int[] containerLocation = new int[2];
+        mTabsContainer.getLocationOnScreen(containerLocation);
+        float x = rawX - containerLocation[0];
+
         int tabCount = 0;
         for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
             if (mTabsContainer.getChildAt(i).getTag() instanceof String) tabCount++;
         }
-        desired = Math.max(0, Math.min(desired, tabCount - 1));
-        if (desired == from) return;
-        mTabsContainer.removeView(dragged);
-        if (desired > mTabsContainer.getChildCount() - 1) desired = mTabsContainer.getChildCount() - 1;
-        mTabsContainer.addView(dragged, desired);
-    }
 
-    private boolean handleTabDrag(DragEvent event) {
-        if (event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
-            if (mTabPopup != null) {
-                mTabPopup.close(false);
-                mTabPopup = null;
-            }
-            View target = findTabAt(event.getX() + getScrollX());
-            Object localState = event.getLocalState();
-            if (target != null && localState instanceof String) {
-                moveTabView((String) localState, target);
-            }
-        } else if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
-            persistCurrentOrder();
-            mDraggingTabId = null;
-        }
-        return true;
-    }
-
-    private View findTabAt(float x) {
-        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
-            View child = mTabsContainer.getChildAt(i);
-            if (!(child.getTag() instanceof String)) continue;
-            if (x >= child.getLeft() && x <= child.getRight()) return child;
-        }
-        return null;
-    }
-
-    private void moveTabView(String draggedId, View target) {
-        View dragged = null;
-        for (int i = 0; i < mTabsContainer.getChildCount(); i++) {
-            View child = mTabsContainer.getChildAt(i);
-            if (draggedId.equals(child.getTag())) {
-                dragged = child;
-                break;
+        int to = from;
+        if (from > 0) {
+            View left = mTabsContainer.getChildAt(from - 1);
+            if (left.getTag() instanceof String
+                    && x < (left.getLeft() + left.getRight()) / 2f) {
+                to = from - 1;
             }
         }
-        if (dragged == null || dragged == target) return;
-        int from = mTabsContainer.indexOfChild(dragged);
-        int to = mTabsContainer.indexOfChild(target);
-        if (from < 0 || to < 0) return;
+        if (to == from && from < tabCount - 1) {
+            View right = mTabsContainer.getChildAt(from + 1);
+            if (right.getTag() instanceof String
+                    && x > (right.getLeft() + right.getRight()) / 2f) {
+                to = from + 1;
+            }
+        }
+
+        if (to == from) return;
         mTabsContainer.removeViewAt(from);
-        if (from < to) to--;
         mTabsContainer.addView(dragged, to);
     }
 
