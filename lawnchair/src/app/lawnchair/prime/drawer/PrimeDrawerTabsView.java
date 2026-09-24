@@ -112,11 +112,8 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 label = tab.getTitle();
             }
             final String tabId = tab.getId();
-            TextView pill = addPill(label, tabId.equals(configuration.getSelectedTabId()), () -> {
-                mRepository.setSelectedTab(tabId);
-                refresh(parent);
-                parent.onPrimeDrawerTabSelected();
-            });
+            TextView pill = addPill(label, tabId.equals(configuration.getSelectedTabId()), () ->
+                    selectTab(parent, tabId, 0));
             pill.setTag(tabId);
             pill.setOnTouchListener((v, event) -> {
                 mLastTouchRawX = event.getRawX();
@@ -154,6 +151,34 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             });
         }
         addPill("+", false, () -> showCreateTabDialog(parent));
+        ensureSelectedTabVisible(configuration.getSelectedTabId());
+    }
+
+    private void selectTab(FloatingHeaderView parent, String tabId, int direction) {
+        PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
+        if (tabId.equals(configuration.getSelectedTabId())) {
+            ensureSelectedTabVisible(tabId);
+            return;
+        }
+        mRepository.setSelectedTab(tabId);
+        refresh(parent);
+        parent.onPrimeDrawerTabSelected(direction);
+    }
+
+    private void ensureSelectedTabVisible(String tabId) {
+        post(() -> {
+            View selected = mTabsContainer.findViewWithTag(tabId);
+            if (selected == null || getWidth() == 0) return;
+            int visibleLeft = getScrollX();
+            int visibleRight = visibleLeft + getWidth();
+            int targetLeft = selected.getLeft();
+            int targetRight = selected.getRight();
+            if (targetLeft < visibleLeft) {
+                smoothScrollTo(targetLeft, 0);
+            } else if (targetRight > visibleRight) {
+                smoothScrollTo(targetRight - getWidth(), 0);
+            }
+        });
     }
 
     @Override
@@ -260,14 +285,13 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         int targetIndex = swipeLeft ? currentIndex + 1 : currentIndex - 1;
         if (targetIndex < 0 || targetIndex >= visibleTabs.size()) return;
 
-        mRepository.setSelectedTab(visibleTabs.get(targetIndex).getId());
-        refresh(parent);
-        parent.onPrimeDrawerTabSelected();
+        selectTab(parent, visibleTabs.get(targetIndex).getId(), swipeLeft ? 1 : -1);
     }
 
     private boolean isTabVisible(PrimeDrawerTab tab, boolean hasUserTabs) {
         if (PrimeDrawerTabsRepository.ALL_TAB_ID.equals(tab.getId())) {
-            return !hasUserTabs || !mPrefs.getDrawerTabsHideAll().get();
+            return !mPrefs.getDrawerTabsHideAll().get()
+                    || (!hasUserTabs && mPrefs.getDrawerTabsHideUnclassified().get());
         }
         if (PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID.equals(tab.getId())) {
             return !mPrefs.getDrawerTabsHideUnclassified().get();

@@ -420,14 +420,33 @@ public class FloatingHeaderView extends LinearLayout implements
     }
 
     public void onPrimeDrawerTabSelected() {
-        if (mMainRV != null && mMainRV.getApps() != null) {
-            mMainRV.getApps().onAppsUpdated();
-            mMainRV.scrollToTop();
-        }
-        if (mWorkRV != null && mWorkRV.getApps() != null) {
-            mWorkRV.getApps().onAppsUpdated();
-            mWorkRV.scrollToTop();
-        }
+        onPrimeDrawerTabSelected(0);
+    }
+
+    public void onPrimeDrawerTabSelected(int direction) {
+        refreshPrimeRecyclerView(mMainRV, direction);
+        refreshPrimeRecyclerView(mWorkRV, direction);
+    }
+
+    private void refreshPrimeRecyclerView(@Nullable AllAppsRecyclerView rv, int direction) {
+        if (rv == null || rv.getApps() == null) return;
+
+        rv.animate().cancel();
+        rv.setTranslationX(0f);
+        rv.setAlpha(1f);
+        rv.getApps().onAppsUpdated();
+        rv.scrollToTop();
+
+        if (direction == 0 || rv.getWidth() == 0) return;
+
+        float distance = rv.getWidth() * 0.12f;
+        rv.setTranslationX(direction > 0 ? distance : -distance);
+        rv.setAlpha(0.72f);
+        rv.animate()
+                .translationX(0f)
+                .alpha(1f)
+                .setDuration(220)
+                .start();
     }
 
     PersonalWorkSlidingTabStrip getTabLayout() {
