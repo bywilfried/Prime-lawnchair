@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -288,12 +289,13 @@ private fun DrawerLayoutPreference(
         },
     )
     val maxPreviewHeight = LocalConfiguration.current.screenHeightDp.dp / 4
+    val maxPreviewWidth = maxPreviewHeight * 4 / 3
 
     Column {
         app.lawnchair.ui.preferences.components.layout.PreferenceGroupHeading(stringResource(id = R.string.layout))
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             DrawerLayoutMode.entries.forEach { mode ->
                 SwitchPreferencePreviewCard(
@@ -304,7 +306,9 @@ private fun DrawerLayoutPreference(
                     },
                     isSelected = layoutModeAdapter.state.value == mode,
                     onClick = { layoutModeAdapter.onChange(mode) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .widthIn(max = maxPreviewWidth),
                     maxPreviewHeight = maxPreviewHeight,
                 ) { DrawerLayoutPreview(mode) }
             }
