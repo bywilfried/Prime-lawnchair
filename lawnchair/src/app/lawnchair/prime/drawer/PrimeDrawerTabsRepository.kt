@@ -49,18 +49,12 @@ class PrimeDrawerTabsRepository(context: Context) {
         )
     }
 
-    fun reorderUserTabs(orderedTabIds: List<String>) {
+    fun reorderTabs(orderedTabIds: List<String>) {
         val configuration = getConfiguration()
-        val userTabs = configuration.tabs
-            .filter { !it.isSystem }
-            .associateBy { it.id }
-        val reordered = orderedTabIds.mapNotNull(userTabs::get) +
-            configuration.tabs.filter { !it.isSystem && it.id !in orderedTabIds }
-        saveConfiguration(
-            configuration.copy(
-                tabs = configuration.tabs.filter { it.isSystem } + reordered,
-            ),
-        )
+        val tabsById = configuration.tabs.associateBy { it.id }
+        val reordered = orderedTabIds.mapNotNull(tabsById::get) +
+            configuration.tabs.filter { it.id !in orderedTabIds }
+        saveConfiguration(configuration.copy(tabs = reordered))
     }
 
     fun setDefaultTab(tabId: String) {
@@ -195,13 +189,17 @@ data class PrimeDrawerTabsConfiguration(
     val selectedTabId: String,
 ) {
     fun normalized(): PrimeDrawerTabsConfiguration {
-        val userTabs = tabs.filterNot { it.isSystem }
-        val normalizedTabs = listOf(
-            tabs.firstOrNull { it.id == PrimeDrawerTabsRepository.ALL_TAB_ID }
-                ?: PrimeDrawerTab(PrimeDrawerTabsRepository.ALL_TAB_ID),
-            tabs.firstOrNull { it.id == PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID }
-                ?: PrimeDrawerTab(PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID),
-        ) + userTabs
+        val uniqueTabs = tabs.distinctBy { it.id }.toMutableList()
+        if (uniqueTabs.none { it.id == PrimeDrawerTabsRepository.ALL_TAB_ID }) {
+            uniqueTabs.add(0, PrimeDrawerTab(PrimeDrawerTabsRepository.ALL_TAB_ID))
+        }
+        if (uniqueTabs.none { it.id == PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID }) {
+            val allIndex = uniqueTabs.indexOfFirst {
+                it.id == PrimeDrawerTabsRepository.ALL_TAB_ID
+            }
+            uniqueTabs.add(allIndex + 1, PrimeDrawerTab(PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID))
+        }
+        val normalizedTabs = uniqueTabs.toList()
         val ids = normalizedTabs.mapTo(hashSetOf()) { it.id }
         return copy(
             tabs = normalizedTabs,

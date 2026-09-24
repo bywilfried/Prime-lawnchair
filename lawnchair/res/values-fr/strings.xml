@@ -21,4 +21,10 @@
     <string name="prime_tab_name_hint">Nom de l’onglet</string>
     <string name="prime_tab_create_action">Créer</string>
     <string name="prime_tab_name_required">Saisissez un nom d’onglet</string>
+    <string name="prime_tab_rename">Renommer</string>
+    <string name="prime_tab_reorganize">Réorganiser</string>
+    <string name="prime_tab_set_default">Définir par défaut</string>
+    <string name="prime_tab_apps">Applications</string>
+    <string name="prime_tab_advanced">Options avancées</string>
+    <string name="prime_tab_delete">Supprimer</string>
 </resources>

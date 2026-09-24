@@ -1075,4 +1075,10 @@
     <string name="prime_tab_name_hint">Tab name</string>
     <string name="prime_tab_create_action">Create</string>
     <string name="prime_tab_name_required">Enter a tab name</string>
+    <string name="prime_tab_rename">Rename</string>
+    <string name="prime_tab_reorganize">Reorganize</string>
+    <string name="prime_tab_set_default">Set as default</string>
+    <string name="prime_tab_apps">Apps</string>
+    <string name="prime_tab_advanced">Advanced options</string>
+    <string name="prime_tab_delete">Delete</string>
 </resources>
