@@ -59,8 +59,27 @@ class PrimeDrawerTabsRepository(context: Context) {
 
     fun setDefaultTab(tabId: String) {
         val configuration = getConfiguration()
-        if (configuration.tabs.none { it.id == tabId }) return
+        if (configuration.tabs.none { it.id == tabId && it.isVisible }) return
         saveConfiguration(configuration.copy(defaultTabId = tabId))
+    }
+
+    fun setSystemTabVisible(tabId: String, visible: Boolean): Boolean {
+        if (tabId != ALL_TAB_ID && tabId != UNCLASSIFIED_TAB_ID) return false
+        val configuration = getConfiguration()
+        val updatedTabs = configuration.tabs.map { tab ->
+            if (tab.id == tabId) tab.copy(isVisible = visible) else tab
+        }
+        if (updatedTabs.none { it.isVisible }) return false
+        val visibleIds = updatedTabs.filter { it.isVisible }.mapTo(linkedSetOf()) { it.id }
+        val fallbackId = updatedTabs.first { it.isVisible }.id
+        saveConfiguration(
+            configuration.copy(
+                tabs = updatedTabs,
+                defaultTabId = configuration.defaultTabId.takeIf(visibleIds::contains) ?: fallbackId,
+                selectedTabId = configuration.selectedTabId.takeIf(visibleIds::contains) ?: fallbackId,
+            ),
+        )
+        return true
     }
 
     fun setSelectedTab(tabId: String) {
@@ -124,6 +143,7 @@ class PrimeDrawerTabsRepository(context: Context) {
                 put(JSONObject().apply {
                     put("id", tab.id)
                     put("title", tab.title)
+                    put("visible", tab.isVisible)
                     put("apps", JSONArray(tab.apps.toList()))
                     put("folders", JSONArray().apply {
                         tab.folders.forEach { folder ->
@@ -151,6 +171,7 @@ class PrimeDrawerTabsRepository(context: Context) {
                         PrimeDrawerTab(
                             id = tab.getString("id"),
                             title = tab.optString("title"),
+                            isVisible = tab.optBoolean("visible", true),
                             apps = tab.optJSONArray("apps").toStringSet(),
                             folders = tab.optJSONArray("folders").toFolders(),
                         ),
@@ -218,11 +239,20 @@ data class PrimeDrawerTabsConfiguration(
             uniqueTabs.add(allIndex + 1, PrimeDrawerTab(PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID))
         }
         val normalizedTabs = uniqueTabs.toList()
-        val ids = normalizedTabs.mapTo(hashSetOf()) { it.id }
+        val visibleTabs = normalizedTabs.filter { it.isVisible }
+        val safeTabs = if (visibleTabs.isEmpty()) {
+            normalizedTabs.map {
+                if (it.id == PrimeDrawerTabsRepository.ALL_TAB_ID) it.copy(isVisible = true) else it
+            }
+        } else {
+            normalizedTabs
+        }
+        val visibleIds = safeTabs.filter { it.isVisible }.mapTo(hashSetOf()) { it.id }
+        val fallbackId = safeTabs.first { it.isVisible }.id
         return copy(
-            tabs = normalizedTabs,
-            defaultTabId = defaultTabId.takeIf(ids::contains) ?: PrimeDrawerTabsRepository.ALL_TAB_ID,
-            selectedTabId = selectedTabId.takeIf(ids::contains) ?: PrimeDrawerTabsRepository.ALL_TAB_ID,
+            tabs = safeTabs,
+            defaultTabId = defaultTabId.takeIf(visibleIds::contains) ?: fallbackId,
+            selectedTabId = selectedTabId.takeIf(visibleIds::contains) ?: fallbackId,
         )
     }
 
@@ -241,6 +271,7 @@ data class PrimeDrawerTabsConfiguration(
 data class PrimeDrawerTab(
     val id: String,
     val title: String = "",
+    val isVisible: Boolean = true,
     val apps: Set<String> = emptySet(),
     val folders: List<PrimeDrawerFolder> = emptyList(),
 ) {
