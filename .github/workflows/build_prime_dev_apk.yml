@@ -39,7 +39,14 @@ jobs:
           } > keystore.properties
 
       - name: Build APK
-        run: ./gradlew assembleLawnWithQuickstepGithubDebug --warning-mode=none
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew assembleLawnWithQuickstepGithubDebug --warning-mode=none 2>&1 | sed \
+            -e '/^w: /d' \
+            -e '/^warning: /d' \
+            -e '/^Warning: /d' \
+            -e '/^To suppress the warning do one of the following:$/d'
 
       - name: Prepare APK
         shell: bash
