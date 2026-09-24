@@ -9,6 +9,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.DragEvent;
 import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -42,6 +44,10 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     private boolean mIsScrolledOut;
     private OptionsPopupView<?> mTabPopup;
     private String mDraggingTabId;
+    private float mLongPressDownX;
+    private float mLastTouchRawX;
+    private boolean mLongPressActive;
+    private final int mTouchSlop;
 
     public PrimeDrawerTabsView(Context context) {
         this(context, null);
@@ -51,6 +57,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         super(context, attrs);
         mPrefs = PreferenceManager.getInstance(context);
         mRepository = new PrimeDrawerTabsRepository(context);
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         mTabsContainer = new LinearLayout(context);
         mTabsContainer.setOrientation(LinearLayout.HORIZONTAL);
         mTabsContainer.setGravity(Gravity.CENTER_VERTICAL);
@@ -87,11 +94,33 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 parent.onPrimeDrawerTabSelected();
             });
             pill.setTag(tabId);
+            pill.setOnTouchListener((v, event) -> {
+                mLastTouchRawX = event.getRawX();
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    mLongPressDownX = event.getRawX();
+                    mLongPressActive = false;
+                } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE
+                        && mLongPressActive
+                        && Math.abs(event.getRawX() - mLongPressDownX) > mTouchSlop) {
+                    if (mTabPopup != null) {
+                        mTabPopup.close(false);
+                        mTabPopup = null;
+                    }
+                    mLongPressActive = false;
+                    mDraggingTabId = tabId;
+                    v.startDragAndDrop(null, new DragShadowBuilder(v), tabId, 0);
+                    return true;
+                } else if (event.getActionMasked() == MotionEvent.ACTION_UP
+                        || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                    mLongPressActive = false;
+                }
+                return false;
+            });
             pill.setOnLongClickListener(v -> {
                 v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                mLongPressActive = true;
+                mLongPressDownX = mLastTouchRawX;
                 showTabMenu(parent, tab, pill);
-                mDraggingTabId = tabId;
-                v.startDragAndDrop(null, new DragShadowBuilder(v), tabId, 0);
                 return true;
             });
             pill.setOnDragListener((v, event) -> handleTabDrag(event));
