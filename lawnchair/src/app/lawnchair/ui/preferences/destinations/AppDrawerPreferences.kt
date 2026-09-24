@@ -297,7 +297,7 @@ private fun DrawerLayoutPreference(
                     },
                     isSelected = layoutModeAdapter.state.value == mode,
                     onClick = { layoutModeAdapter.onChange(mode) },
-                    modifier = Modifier.width(104.dp),
+                    modifier = Modifier.weight(1f),
                 ) { DrawerLayoutPreview(mode) }
             }
         }
