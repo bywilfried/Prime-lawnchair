@@ -1326,19 +1326,32 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             private float downY;
             private boolean horizontalSwipe;
 
+            private void reset(AllAppsRecyclerView rv) {
+                horizontalSwipe = false;
+                rv.animate().cancel();
+                rv.animate().translationX(0f).setDuration(160).start();
+            }
+
             @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView recycler, @NonNull MotionEvent e) {
+                AllAppsRecyclerView rv = (AllAppsRecyclerView) recycler;
                 switch (e.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         downX = e.getX();
                         downY = e.getY();
                         horizontalSwipe = false;
+                        rv.animate().cancel();
                         return false;
                     case MotionEvent.ACTION_MOVE:
                         float dx = e.getX() - downX;
                         float dy = e.getY() - downY;
-                        if (Math.abs(dx) > touchSlop * 2 && Math.abs(dx) > Math.abs(dy)) {
+                        if (!horizontalSwipe
+                                && Math.abs(dx) > touchSlop
+                                && Math.abs(dx) > Math.abs(dy) * 1.15f) {
                             horizontalSwipe = true;
+                        }
+                        if (horizontalSwipe) {
+                            rv.setTranslationX(dx * 0.42f);
                             return true;
                         }
                         return false;
@@ -1348,16 +1361,38 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             }
 
             @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            public void onTouchEvent(@NonNull RecyclerView recycler, @NonNull MotionEvent e) {
+                AllAppsRecyclerView rv = (AllAppsRecyclerView) recycler;
                 if (!horizontalSwipe) return;
+
+                if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {
+                    rv.setTranslationX((e.getX() - downX) * 0.42f);
+                    return;
+                }
+
                 if (e.getActionMasked() == MotionEvent.ACTION_UP) {
                     float dx = e.getX() - downX;
-                    if (Math.abs(dx) > touchSlop * 2) {
-                        onSwipe.accept(dx < 0);
+                    float threshold = Math.max(touchSlop * 3f, rv.getWidth() * 0.12f);
+                    if (Math.abs(dx) >= threshold) {
+                        final boolean swipeLeft = dx < 0;
+                        final float exitX = swipeLeft ? -rv.getWidth() * 0.18f : rv.getWidth() * 0.18f;
+                        rv.animate().cancel();
+                        rv.animate()
+                                .translationX(exitX)
+                                .alpha(0.82f)
+                                .setDuration(90)
+                                .withEndAction(() -> {
+                                    rv.setTranslationX(0f);
+                                    rv.setAlpha(1f);
+                                    onSwipe.accept(swipeLeft);
+                                })
+                                .start();
+                    } else {
+                        reset(rv);
                     }
                     horizontalSwipe = false;
                 } else if (e.getActionMasked() == MotionEvent.ACTION_CANCEL) {
-                    horizontalSwipe = false;
+                    reset(rv);
                 }
             }
         };

@@ -169,15 +169,24 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         post(() -> {
             View selected = mTabsContainer.findViewWithTag(tabId);
             if (selected == null || getWidth() == 0) return;
-            int visibleLeft = getScrollX();
-            int visibleRight = visibleLeft + getWidth();
-            int targetLeft = selected.getLeft();
-            int targetRight = selected.getRight();
-            if (targetLeft < visibleLeft) {
-                smoothScrollTo(targetLeft, 0);
-            } else if (targetRight > visibleRight) {
-                smoothScrollTo(targetRight - getWidth(), 0);
+
+            int margin = dp(12);
+            int viewportLeft = getScrollX() + getPaddingLeft();
+            int viewportRight = getScrollX() + getWidth() - getPaddingRight();
+            int targetLeft = selected.getLeft() - margin;
+            int targetRight = selected.getRight() + margin;
+
+            int desiredScroll = getScrollX();
+            if (targetLeft < viewportLeft) {
+                desiredScroll -= viewportLeft - targetLeft;
+            } else if (targetRight > viewportRight) {
+                desiredScroll += targetRight - viewportRight;
             }
+
+            int maxScroll = Math.max(0,
+                    mTabsContainer.getWidth() + getPaddingLeft() + getPaddingRight() - getWidth());
+            desiredScroll = Math.max(0, Math.min(desiredScroll, maxScroll));
+            if (desiredScroll != getScrollX()) smoothScrollTo(desiredScroll, 0);
         });
     }
 
