@@ -291,11 +291,13 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 .create();
         dialog.setOnShowListener(ignored ->
                 dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    ArrayList<String> keys = new ArrayList<>();
+                    Set<com.android.launcher3.util.ComponentKey> keys = new HashSet<>();
                     for (int i = 0; i < list.getChildCount(); i++) {
                         View child = list.getChildAt(i);
                         if (child instanceof CheckBox && ((CheckBox) child).isChecked()) {
-                            keys.add((String) child.getTag());
+                            com.android.launcher3.util.ComponentKey key =
+                                    com.android.launcher3.util.ComponentKey.fromString((String) child.getTag());
+                            if (key != null) keys.add(key);
                         }
                     }
                     mRepository.setTabApps(tab.getId(), keys);
