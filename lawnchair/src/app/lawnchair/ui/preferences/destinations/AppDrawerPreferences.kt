@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +42,7 @@ import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.rememberTransformAdapter
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.preferences2.preferenceManager2
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.ui.preferences.LocalIsExpandedScreen
 import app.lawnchair.ui.preferences.components.AppDrawerHapticFeedbackPreference
 import app.lawnchair.ui.preferences.components.NavigationActionPreference
@@ -102,9 +104,20 @@ fun AppDrawerPreferences(
                             },
                         ),
                     )
+                    val hideAllAdapter = prefs.drawerTabsHideAll.getAdapter()
+                    val hasUserTabs = PrimeDrawerTabsRepository(context)
+                        .getConfiguration()
+                        .tabs
+                        .any { !it.isSystem }
+                    LaunchedEffect(hasUserTabs) {
+                        if (!hasUserTabs && hideAllAdapter.state.value) {
+                            hideAllAdapter.onChange(false)
+                        }
+                    }
                     SwitchPreference(
                         label = stringResource(id = R.string.prime_tabs_hide_all),
-                        adapter = prefs.drawerTabsHideAll.getAdapter(),
+                        adapter = hideAllAdapter,
+                        enabled = hasUserTabs,
                     )
                     SwitchPreference(
                         label = stringResource(id = R.string.prime_tabs_hide_unclassified),

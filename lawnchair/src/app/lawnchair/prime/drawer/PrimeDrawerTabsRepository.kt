@@ -15,6 +15,7 @@ import org.json.JSONObject
  */
 class PrimeDrawerTabsRepository(context: Context) {
     private val prefs = LauncherPrefs.getPrefs(context)
+    private val primePrefs = app.lawnchair.preferences.PreferenceManager.getInstance(context)
 
     fun getConfiguration(): PrimeDrawerTabsConfiguration =
         decode(prefs.getString(PREF_CONFIGURATION, null))
@@ -40,13 +41,17 @@ class PrimeDrawerTabsRepository(context: Context) {
     fun deleteTab(tabId: String) {
         if (tabId == ALL_TAB_ID || tabId == UNCLASSIFIED_TAB_ID) return
         val configuration = getConfiguration()
+        val remainingTabs = configuration.tabs.filterNot { it.id == tabId }
         saveConfiguration(
             configuration.copy(
-                tabs = configuration.tabs.filterNot { it.id == tabId },
+                tabs = remainingTabs,
                 defaultTabId = configuration.defaultTabId.takeUnless { it == tabId } ?: ALL_TAB_ID,
                 selectedTabId = configuration.selectedTabId.takeUnless { it == tabId } ?: ALL_TAB_ID,
             ),
         )
+        if (remainingTabs.none { !it.isSystem }) {
+            primePrefs.drawerTabsHideAll.set(false)
+        }
     }
 
     fun reorderTabs(orderedTabIds: List<String>) {
