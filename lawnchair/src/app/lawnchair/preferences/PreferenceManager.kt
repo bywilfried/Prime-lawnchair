@@ -185,6 +185,8 @@ class PreferenceManager @Inject constructor(
     val drawerList = BoolPref("pref_drawerList", true, recreate)
     val drawerTabsEnabled = BoolPref("pref_drawerTabsEnabled", false, recreate)
     val drawerTabsOpenMode = StringPref("pref_drawerTabsOpenMode", "last")
+    val drawerTabsHideAll = BoolPref("pref_drawerTabsHideAll", false, recreate)
+    val drawerTabsHideUnclassified = BoolPref("pref_drawerTabsHideUnclassified", true, recreate)
     val folderApps = BoolPref("pref_hideFolderApps", true, reloadGrid)
 
     val recentsActionScreenshot = BoolPref("pref_recentsActionScreenshot", !isOnePlusStock)

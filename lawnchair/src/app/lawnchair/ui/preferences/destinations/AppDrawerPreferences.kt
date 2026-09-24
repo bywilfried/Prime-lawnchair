@@ -102,6 +102,14 @@ fun AppDrawerPreferences(
                             },
                         ),
                     )
+                    SwitchPreference(
+                        label = stringResource(id = R.string.prime_tabs_hide_all),
+                        adapter = prefs.drawerTabsHideAll.getAdapter(),
+                    )
+                    SwitchPreference(
+                        label = stringResource(id = R.string.prime_tabs_hide_unclassified),
+                        adapter = prefs.drawerTabsHideUnclassified.getAdapter(),
+                    )
                 }
             }
         }

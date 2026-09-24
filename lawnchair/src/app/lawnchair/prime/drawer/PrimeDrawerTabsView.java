@@ -90,8 +90,15 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
 
         PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
         List<PrimeDrawerTab> tabs = configuration.getTabs();
+        boolean hasUserTabs = false;
+        for (PrimeDrawerTab candidate : tabs) {
+            if (!candidate.isSystem()) {
+                hasUserTabs = true;
+                break;
+            }
+        }
         for (PrimeDrawerTab tab : tabs) {
-            if (!tab.isVisible()) continue;
+            if (!isTabVisible(tab, hasUserTabs)) continue;
             String label;
             if (PrimeDrawerTabsRepository.ALL_TAB_ID.equals(tab.getId())) {
                 label = getContext().getString(R.string.prime_tab_all);
@@ -185,9 +192,16 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
         String openMode = mPrefs.getDrawerTabsOpenMode().get();
         String targetTabId = configuration.getSelectedTabId();
+        boolean hasUserTabs = false;
+        for (PrimeDrawerTab tab : configuration.getTabs()) {
+            if (!tab.isSystem()) {
+                hasUserTabs = true;
+                break;
+            }
+        }
         List<PrimeDrawerTab> visibleTabs = new ArrayList<>();
         for (PrimeDrawerTab tab : configuration.getTabs()) {
-            if (tab.isVisible()) visibleTabs.add(tab);
+            if (isTabVisible(tab, hasUserTabs)) visibleTabs.add(tab);
         }
         if (visibleTabs.isEmpty()) return;
         if ("first".equals(openMode)) {
@@ -211,6 +225,16 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             refresh(parent);
             parent.onPrimeDrawerTabSelected();
         }
+    }
+
+    private boolean isTabVisible(PrimeDrawerTab tab, boolean hasUserTabs) {
+        if (PrimeDrawerTabsRepository.ALL_TAB_ID.equals(tab.getId())) {
+            return !hasUserTabs || !mPrefs.getDrawerTabsHideAll().get();
+        }
+        if (PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID.equals(tab.getId())) {
+            return !mPrefs.getDrawerTabsHideUnclassified().get();
+        }
+        return true;
     }
 
     private boolean handleRowTouch(MotionEvent event) {
@@ -277,17 +301,6 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             mRepository.setDefaultTab(tab.getId());
             return true;
         }));
-        if (tab.isSystem()) {
-            items.add(option(R.string.prime_tab_hide, v -> {
-                if (!mRepository.setSystemTabVisible(tab.getId(), false)) {
-                    showCannotHideLastTabDialog();
-                    return true;
-                }
-                refresh(parent);
-                parent.onPrimeDrawerTabSelected();
-                return true;
-            }));
-        }
         if (!tab.isSystem()) {
             items.add(option(getContext().getString(R.string.prime_tab_apps), v -> {
                 showAppsDialog(parent, tab);
@@ -305,14 +318,6 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         RectF target = new RectF(location[0], location[1],
                 location[0] + anchor.getWidth(), location[1] + anchor.getHeight());
         mTabPopup = OptionsPopupView.show(activityContext, target, items, false);
-    }
-
-    private void showCannotHideLastTabDialog() {
-        new AlertDialog.Builder(getContext())
-                .setTitle(R.string.prime_tab_cannot_hide_title)
-                .setMessage(R.string.prime_tab_cannot_hide_message)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
     }
 
     private void showAppsDialog(FloatingHeaderView parent, PrimeDrawerTab tab) {

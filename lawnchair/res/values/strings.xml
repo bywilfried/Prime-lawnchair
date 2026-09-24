@@ -1077,9 +1077,6 @@
     <string name="prime_tab_name_required">Enter a tab name</string>
     <string name="prime_tab_rename">Rename</string>\n    <string name="prime_tab_rename_action">Rename</string>
     <string name="prime_tab_set_default">Set as default</string>
-    <string name="prime_tab_hide">Hide tab</string>
-    <string name="prime_tab_cannot_hide_title">Keep one tab visible</string>
-    <string name="prime_tab_cannot_hide_message">At least one tab must remain visible.</string>
     <string name="prime_tab_apps">Apps</string>
     <string name="prime_tab_advanced">Advanced options</string>
     <string name="prime_tab_delete">Delete</string>\n    <string name="prime_tab_delete_confirm_title">Delete tab?</string>\n    <string name="prime_tab_delete_confirm_message">Delete “%1$s”? Apps in this tab will become unclassified unless they belong to another tab.</string>
@@ -1089,4 +1086,6 @@
     <string name="prime_tabs_open_first">First tab</string>
     <string name="prime_tabs_open_last">Last viewed tab</string>
     <string name="prime_tabs_open_default">Default tab</string>
+    <string name="prime_tabs_hide_all">Hide All tab</string>
+    <string name="prime_tabs_hide_unclassified">Hide Unclassified tab</string>
 </resources>

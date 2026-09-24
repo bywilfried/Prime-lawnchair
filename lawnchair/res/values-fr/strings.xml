@@ -23,9 +23,6 @@
     <string name="prime_tab_name_required">Saisissez un nom d’onglet</string>
     <string name="prime_tab_rename">Renommer</string>\n    <string name="prime_tab_rename_action">Renommer</string>
     <string name="prime_tab_set_default">Définir par défaut</string>
-    <string name="prime_tab_hide">Masquer l’onglet</string>
-    <string name="prime_tab_cannot_hide_title">Conserver un onglet visible</string>
-    <string name="prime_tab_cannot_hide_message">Au moins un onglet doit rester visible.</string>
     <string name="prime_tab_apps">Applications</string>
     <string name="prime_tab_advanced">Options avancées</string>
     <string name="prime_tab_delete">Supprimer</string>\n    <string name="prime_tab_delete_confirm_title">Supprimer l’onglet ?</string>\n    <string name="prime_tab_delete_confirm_message">Supprimer « %1$s » ? Les applications de cet onglet redeviendront non classées sauf si elles appartiennent à un autre onglet.</string>
@@ -36,4 +33,6 @@
     <string name="prime_tabs_open_first">Premier onglet</string>
     <string name="prime_tabs_open_last">Dernier onglet consulté</string>
     <string name="prime_tabs_open_default">Onglet par défaut</string>
+    <string name="prime_tabs_hide_all">Masquer l’onglet Toutes</string>
+    <string name="prime_tabs_hide_unclassified">Masquer l’onglet Non classées</string>
 </resources>
