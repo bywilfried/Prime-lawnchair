@@ -1086,6 +1086,6 @@
     <string name="prime_tabs_open_first">First tab</string>
     <string name="prime_tabs_open_last">Last viewed tab</string>
     <string name="prime_tabs_open_default">Default tab</string>
-    <string name="prime_tabs_hide_all">Hide All tab</string>
+    <string name="prime_tabs_swipe_enabled">Swipe between tabs</string>\n    <string name="prime_tabs_hide_all">Hide All tab</string>
     <string name="prime_tabs_hide_unclassified">Hide Unclassified tab</string>
 </resources>

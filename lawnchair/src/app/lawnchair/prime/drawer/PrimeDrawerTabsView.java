@@ -80,6 +80,10 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     @Override
     public void setup(FloatingHeaderView parent, FloatingHeaderRow[] rows, boolean tabsHidden) {
         refresh(parent);
+        if (parent.getParent() instanceof ActivityAllAppsContainerView) {
+            ((ActivityAllAppsContainerView<?>) parent.getParent())
+                    .setPrimeDrawerSwipeListener(swipeLeft -> switchTabBySwipe(parent, swipeLeft));
+        }
     }
 
     private void refresh(FloatingHeaderView parent) {
@@ -225,6 +229,40 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
             refresh(parent);
             parent.onPrimeDrawerTabSelected();
         }
+    }
+
+    private void switchTabBySwipe(FloatingHeaderView parent, boolean swipeLeft) {
+        if (!mPrefs.getDrawerTabsEnabled().get() || !mPrefs.getDrawerTabsSwipeEnabled().get()) return;
+
+        PrimeDrawerTabsConfiguration configuration = mRepository.getConfiguration();
+        boolean hasUserTabs = false;
+        for (PrimeDrawerTab tab : configuration.getTabs()) {
+            if (!tab.isSystem()) {
+                hasUserTabs = true;
+                break;
+            }
+        }
+
+        List<PrimeDrawerTab> visibleTabs = new ArrayList<>();
+        for (PrimeDrawerTab tab : configuration.getTabs()) {
+            if (isTabVisible(tab, hasUserTabs)) visibleTabs.add(tab);
+        }
+        if (visibleTabs.size() < 2) return;
+
+        int currentIndex = 0;
+        for (int i = 0; i < visibleTabs.size(); i++) {
+            if (visibleTabs.get(i).getId().equals(configuration.getSelectedTabId())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int targetIndex = swipeLeft ? currentIndex + 1 : currentIndex - 1;
+        if (targetIndex < 0 || targetIndex >= visibleTabs.size()) return;
+
+        mRepository.setSelectedTab(visibleTabs.get(targetIndex).getId());
+        refresh(parent);
+        parent.onPrimeDrawerTabSelected();
     }
 
     private boolean isTabVisible(PrimeDrawerTab tab, boolean hasUserTabs) {

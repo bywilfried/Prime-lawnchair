@@ -193,6 +193,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
     protected SearchUiManager mSearchUiManager;
     protected boolean mUsingTabs;
     protected RecyclerViewFastScroller mTouchHandler;
+    @Nullable private RecyclerView.SimpleOnItemTouchListener mPrimeDrawerSwipeListener;
 
     /** {@code true} when rendered view is in search state instead of the scroll state. */
     private boolean mIsSearching;
@@ -1308,6 +1309,63 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
             return getSearchRecyclerView();
         }
         return getActiveAppsRecyclerView();
+    }
+
+    /** Installs Prime horizontal tab swipes on app-list RecyclerViews only. */
+    public void setPrimeDrawerSwipeListener(Consumer<Boolean> onSwipe) {
+        if (mPrimeDrawerSwipeListener != null) {
+            for (int type : new int[]{AdapterHolder.MAIN, AdapterHolder.WORK}) {
+                AllAppsRecyclerView rv = mAH.get(type).mRecyclerView;
+                if (rv != null) rv.removeOnItemTouchListener(mPrimeDrawerSwipeListener);
+            }
+        }
+
+        final int touchSlop = android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop();
+        mPrimeDrawerSwipeListener = new RecyclerView.SimpleOnItemTouchListener() {
+            private float downX;
+            private float downY;
+            private boolean horizontalSwipe;
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                switch (e.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        downX = e.getX();
+                        downY = e.getY();
+                        horizontalSwipe = false;
+                        return false;
+                    case MotionEvent.ACTION_MOVE:
+                        float dx = e.getX() - downX;
+                        float dy = e.getY() - downY;
+                        if (Math.abs(dx) > touchSlop * 2 && Math.abs(dx) > Math.abs(dy)) {
+                            horizontalSwipe = true;
+                            return true;
+                        }
+                        return false;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                if (!horizontalSwipe) return;
+                if (e.getActionMasked() == MotionEvent.ACTION_UP) {
+                    float dx = e.getX() - downX;
+                    if (Math.abs(dx) > touchSlop * 2) {
+                        onSwipe.accept(dx < 0);
+                    }
+                    horizontalSwipe = false;
+                } else if (e.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                    horizontalSwipe = false;
+                }
+            }
+        };
+
+        for (int type : new int[]{AdapterHolder.MAIN, AdapterHolder.WORK}) {
+            AllAppsRecyclerView rv = mAH.get(type).mRecyclerView;
+            if (rv != null) rv.addOnItemTouchListener(mPrimeDrawerSwipeListener);
+        }
     }
 
     /** Run some code on all the recycler views. */
