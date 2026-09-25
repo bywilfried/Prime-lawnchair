@@ -75,27 +75,27 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         reorderEnabled = tab.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
-                text = { Text("Ordre alphabétique") },
+                text = { Text("Alphabétique") },
                 trailingIcon = { if (tab.sortMode == "alphabetical") Icon(Icons.Rounded.Check, null) },
                 onClick = { repository.setTabSortMode(tabId, "alphabetical"); hideMenu() },
             )
             DropdownMenuItem(
-                text = { Text("Ordre personnalisé") },
+                text = { Text("Personnalisé") },
                 trailingIcon = { if (tab.sortMode == "custom") Icon(Icons.Rounded.Check, null) },
                 onClick = { repository.setTabSortMode(tabId, "custom"); hideMenu() },
             )
             DropdownMenuItem(
-                text = { Text("Dossiers au début") },
+                text = { Text("Au début") },
                 trailingIcon = { if (tab.folderPlacement == "start") Icon(Icons.Rounded.Check, null) },
                 onClick = { repository.setTabFolderPlacement(tabId, "start"); hideMenu() },
             )
             DropdownMenuItem(
-                text = { Text("Dossiers à la fin") },
+                text = { Text("À la fin") },
                 trailingIcon = { if (tab.folderPlacement == "end") Icon(Icons.Rounded.Check, null) },
                 onClick = { repository.setTabFolderPlacement(tabId, "end"); hideMenu() },
             )
             DropdownMenuItem(
-                text = { Text("Dossiers personnalisés") },
+                text = { Text("Comme les applications") },
                 trailingIcon = { if (tab.folderPlacement == "mixed") Icon(Icons.Rounded.Check, null) },
                 onClick = { repository.setTabFolderPlacement(tabId, "mixed"); hideMenu() },
             )
