@@ -82,6 +82,57 @@ class PrimeDrawerTabsRepository(context: Context) {
         updateTab(tabId) { tab -> tab.copy(apps = apps.mapTo(linkedSetOf(), ComponentKey::toString)) }
     }
 
+    fun createFolder(tabId: String, title: String): PrimeDrawerFolder? {
+        if (tabId == ALL_TAB_ID || tabId == UNCLASSIFIED_TAB_ID) return null
+        val configuration = getConfiguration()
+        val tab = configuration.tabs.firstOrNull { it.id == tabId } ?: return null
+        val folder = PrimeDrawerFolder(
+            id = nextFolderId(tab.folders),
+            title = title.trim(),
+        )
+        updateTab(tabId) { it.copy(folders = it.folders + folder) }
+        return folder
+    }
+
+    fun renameFolder(tabId: String, folderId: String, title: String) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(
+                folders = tab.folders.map { folder ->
+                    if (folder.id == folderId) folder.copy(title = title.trim()) else folder
+                },
+            )
+        }
+    }
+
+    fun deleteFolder(tabId: String, folderId: String) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(folders = tab.folders.filterNot { it.id == folderId })
+        }
+    }
+
+    fun reorderFolders(tabId: String, orderedFolderIds: List<String>) {
+        updateUserTab(tabId) { tab ->
+            val foldersById = tab.folders.associateBy { it.id }
+            val reordered = orderedFolderIds.mapNotNull(foldersById::get) +
+                tab.folders.filter { it.id !in orderedFolderIds }
+            tab.copy(folders = reordered)
+        }
+    }
+
+    fun setFolderApps(tabId: String, folderId: String, apps: Set<ComponentKey>) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(
+                folders = tab.folders.map { folder ->
+                    if (folder.id == folderId) {
+                        folder.copy(apps = apps.mapTo(linkedSetOf(), ComponentKey::toString))
+                    } else {
+                        folder
+                    }
+                },
+            )
+        }
+    }
+
     fun setAppTabs(componentKey: ComponentKey, tabIds: Set<String>) {
         val key = componentKey.toString()
         val configuration = getConfiguration()
@@ -112,6 +163,11 @@ class PrimeDrawerTabsRepository(context: Context) {
                 ?.apps
                 ?.contains(componentKey.toString()) == true
         }
+    }
+
+    private fun updateUserTab(tabId: String, transform: (PrimeDrawerTab) -> PrimeDrawerTab) {
+        if (tabId == ALL_TAB_ID || tabId == UNCLASSIFIED_TAB_ID) return
+        updateTab(tabId, transform)
     }
 
     private fun updateTab(tabId: String, transform: (PrimeDrawerTab) -> PrimeDrawerTab) {
@@ -192,6 +248,13 @@ class PrimeDrawerTabsRepository(context: Context) {
                 )
             }
         }
+    }
+
+    private fun nextFolderId(folders: List<PrimeDrawerFolder>): String {
+        var suffix = 1
+        val ids = folders.mapTo(hashSetOf()) { it.id }
+        while ("folder_$suffix" in ids) suffix++
+        return "folder_$suffix"
     }
 
     private fun nextTabId(tabs: List<PrimeDrawerTab>): String {
