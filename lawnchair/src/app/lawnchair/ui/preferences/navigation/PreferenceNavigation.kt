@@ -49,6 +49,7 @@ import app.lawnchair.ui.preferences.destinations.PickAppForGesture
 import app.lawnchair.ui.preferences.destinations.PredictionsPreferences
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoriesPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryPreference
+import app.lawnchair.ui.preferences.destinations.PrimeDevelopmentOptionsPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryFoldersPreference
 import app.lawnchair.ui.preferences.destinations.PreferencesDashboard
 import app.lawnchair.ui.preferences.destinations.QuickstepPreferences
@@ -210,6 +211,7 @@ fun PreferenceNavigation(
             deepLinks = getDeepLink(BackupAndRestore),
         ) { BackupAndRestorePreference() }
 
+        composable<PrimeDevelopmentOptions> { PrimeDevelopmentOptionsPreference() }
         composable<About>(
             deepLinks = getDeepLink(About),
         ) { About() }

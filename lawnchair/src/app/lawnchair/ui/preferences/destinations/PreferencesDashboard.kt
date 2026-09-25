@@ -83,6 +83,7 @@ import app.lawnchair.ui.preferences.navigation.Gestures
 import app.lawnchair.ui.preferences.navigation.HomeScreen
 import app.lawnchair.ui.preferences.navigation.PreferenceRootRoute
 import app.lawnchair.ui.preferences.navigation.Quickstep
+import app.lawnchair.ui.preferences.navigation.PrimeDevelopmentOptions
 import app.lawnchair.ui.preferences.navigation.Search
 import app.lawnchair.ui.preferences.navigation.Smartspace
 import app.lawnchair.ui.util.addIf
@@ -218,6 +219,14 @@ fun PreferencesDashboard(
                 iconResource = R.drawable.backup_restore,
                 onNavigate = { onNavigate(BackupAndRestore) },
                 isSelected = currentRoute is BackupAndRestore,
+            )
+
+            PreferenceCategory(
+                label = stringResource(R.string.prime_development_options),
+                description = stringResource(R.string.prime_development_options_description),
+                iconResource = R.drawable.ic_general,
+                onNavigate = { onNavigate(PrimeDevelopmentOptions) },
+                isSelected = currentRoute is PrimeDevelopmentOptions,
             )
 
             PreferenceCategory(

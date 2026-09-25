@@ -113,7 +113,7 @@ class LawnchairAlphabeticalAppsList<T>(
                         appsStore.getApp(componentKey) as? AppInfo
                     }.filter { app -> appList.contains(app) }
 
-                    if (resolvedApps.size > 1) {
+                    if (resolvedApps.size > 1 || (resolvedApps.isEmpty() && prefs.primeShowEmptyFolders.get())) {
                         val folderInfo = FolderInfo().apply {
                             title = folder.title
                             resolvedApps.forEach { add(it) }

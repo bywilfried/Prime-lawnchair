@@ -1095,4 +1095,8 @@
     <string name="prime_tabs_open_default">Default tab</string>
     <string name="prime_tabs_swipe_enabled">Swipe between tabs</string>\n    <string name="prime_tabs_hide_all">Hide All tab</string>
     <string name="prime_tabs_hide_unclassified">Hide Unclassified tab</string>
+    <string name="prime_development_options">Development options</string>
+    <string name="prime_development_options_description">Prime development and diagnostic options</string>
+    <string name="prime_show_empty_folders">Show empty folders</string>
+    <string name="prime_show_empty_folders_description">Display empty Prime category folders in the app drawer</string>
 </resources>

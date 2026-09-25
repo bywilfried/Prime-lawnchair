@@ -42,4 +42,8 @@
     <string name="prime_tabs_open_default">Onglet par défaut</string>
     <string name="prime_tabs_swipe_enabled">Changer d’onglet par balayage</string>\n    <string name="prime_tabs_hide_all">Masquer l’onglet Toutes</string>
     <string name="prime_tabs_hide_unclassified">Masquer l’onglet Non classées</string>
+    <string name="prime_development_options">Options de développement</string>
+    <string name="prime_development_options_description">Options de développement et de diagnostic Prime</string>
+    <string name="prime_show_empty_folders">Afficher les dossiers vides</string>
+    <string name="prime_show_empty_folders_description">Afficher les dossiers vides des catégories Prime dans le tiroir des applis</string>
 </resources>
