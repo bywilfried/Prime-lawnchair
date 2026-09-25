@@ -101,7 +101,32 @@ class LawnchairAlphabeticalAppsList<T>(
         // Prime Tabs owns a separate organization. Never project Lawnchair's classic
         // drawer folders or Caddy categories while this mode is active.
         if (prefs.drawerTabsEnabled.get()) {
-            return super.addAppsWithSections(appList, startPosition)
+            var position = startPosition
+            val selectedTabId = primeTabsRepository.getConfiguration().selectedTabId
+            val selectedTab = primeTabsRepository.getConfiguration().tabs
+                .firstOrNull { it.id == selectedTabId }
+
+            if (selectedTab != null && !selectedTab.isSystem) {
+                selectedTab.folders.forEach { folder ->
+                    val resolvedApps = folder.apps.mapNotNull { keyString ->
+                        val componentKey = ComponentKey.fromString(keyString) ?: return@mapNotNull null
+                        appsStore.getApp(componentKey) as? AppInfo
+                    }.filter { app -> appList.contains(app) }
+
+                    if (resolvedApps.size > 1) {
+                        val folderInfo = FolderInfo().apply {
+                            title = folder.title
+                            resolvedApps.forEach { add(it) }
+                        }
+                        mAdapterItems.add(AdapterItem.asFolder(folderInfo))
+                        position++
+                        filteredList.addAll(resolvedApps)
+                    }
+                }
+            }
+
+            val remainingApps = appList.filterNot(filteredList::contains)
+            return super.addAppsWithSections(remainingApps, position)
         }
         var position = startPosition
 
