@@ -169,12 +169,34 @@ class PrimeDrawerTabsRepository(context: Context) {
             tab.copy(
                 folders = tab.folders.map { folder ->
                     if (folder.id == folderId) {
-                        folder.copy(apps = apps.mapTo(linkedSetOf(), ComponentKey::toString))
+                        val keys = apps.mapTo(linkedSetOf(), ComponentKey::toString)
+                        folder.copy(
+                            apps = keys,
+                            customOrder = folder.customOrder.filter(keys::contains) + keys.filterNot(folder.customOrder::contains),
+                        )
                     } else {
                         folder
                     }
                 },
             )
+        }
+    }
+
+    fun setFolderSortMode(tabId: String, folderId: String, mode: String) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(folders = tab.folders.map { folder ->
+                if (folder.id == folderId) folder.copy(sortMode = mode) else folder
+            })
+        }
+    }
+
+    fun setFolderCustomOrder(tabId: String, folderId: String, orderedKeys: List<String>) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(folders = tab.folders.map { folder ->
+                if (folder.id == folderId) {
+                    folder.copy(customOrder = orderedKeys.filter(folder.apps::contains) + folder.apps.filterNot(orderedKeys::contains))
+                } else folder
+            })
         }
     }
 
@@ -248,6 +270,8 @@ class PrimeDrawerTabsRepository(context: Context) {
                                 put("id", folder.id)
                                 put("title", folder.title)
                                 put("apps", JSONArray(folder.apps.toList()))
+                                put("sortMode", folder.sortMode)
+                                put("customOrder", JSONArray(folder.customOrder))
                             })
                         }
                     })
@@ -305,6 +329,8 @@ class PrimeDrawerTabsRepository(context: Context) {
                         id = folder.getString("id"),
                         title = folder.optString("title"),
                         apps = folder.optJSONArray("apps").toStringSet(),
+                        sortMode = folder.optString("sortMode", "alphabetical"),
+                        customOrder = folder.optJSONArray("customOrder").toStringList(),
                     ),
                 )
             }
@@ -388,4 +414,6 @@ data class PrimeDrawerFolder(
     val id: String,
     val title: String,
     val apps: Set<String> = emptySet(),
+    val sortMode: String = "alphabetical",
+    val customOrder: List<String> = emptyList(),
 )
