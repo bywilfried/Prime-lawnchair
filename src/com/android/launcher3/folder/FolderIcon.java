@@ -92,6 +92,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import app.lawnchair.preferences.PreferenceManager;
+
 /**
  * An icon that can appear on in the workspace representing an {@link Folder}.
  */
