@@ -96,7 +96,7 @@ class PrimeDrawerTabsRepository(context: Context) {
     }
 
     fun renameFolderByVisibleContents(folderInfo: FolderInfo, title: String) {
-        val visibleKeys = folderInfo.contents
+        val visibleKeys = folderInfo.getContents()
             .mapNotNull { it.componentKey?.toString() }
             .toSet()
         if (visibleKeys.isEmpty()) return
