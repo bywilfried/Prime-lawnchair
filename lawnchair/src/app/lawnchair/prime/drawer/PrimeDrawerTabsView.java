@@ -1,6 +1,7 @@
 package app.lawnchair.prime.drawer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.content.DialogInterface;
@@ -47,7 +48,7 @@ import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategory;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders;
 
 /** Prime's independent horizontal drawer tab row. */
-public class PrimeDrawerTabsView extends HorizontalScrollView implements FloatingHeaderRow {
+public class PrimeDrawerTabsView extends HorizontalScrollView implements FloatingHeaderRow, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private final PreferenceManager mPrefs;
     private final PrimeDrawerTabsRepository mRepository;
@@ -62,6 +63,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
     private String mGestureTabId;
     private boolean mLongPressActive;
     private final int mTouchSlop;
+    private FloatingHeaderView mHeaderParent;
 
     public PrimeDrawerTabsView(Context context) {
         this(context, null);
@@ -82,11 +84,33 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
 
     @Override
     public void setup(FloatingHeaderView parent, FloatingHeaderRow[] rows, boolean tabsHidden) {
+        mHeaderParent = parent;
         refresh(parent);
         if (parent.getParent() instanceof ActivityAllAppsContainerView) {
             ((ActivityAllAppsContainerView<?>) parent.getParent())
                     .setPrimeDrawerSwipeListener(swipeLeft -> switchTabBySwipe(parent, swipeLeft));
         }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mRepository.registerConfigurationChangeListener(this);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        mRepository.unregisterConfigurationChangeListener(this);
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (!PrimeDrawerTabsRepository.PREF_CONFIGURATION.equals(key) || mHeaderParent == null) return;
+        post(() -> {
+            refresh(mHeaderParent);
+            mHeaderParent.onPrimeDrawerTabSelected();
+        });
     }
 
     private void refresh(FloatingHeaderView parent) {
