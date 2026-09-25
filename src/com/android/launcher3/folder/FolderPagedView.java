@@ -484,6 +484,16 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
             position++;
         }
 
+        // An empty Prime folder has no item loop above to create its first page. Keep one
+        // empty page so the synthetic two-item grid footprint participates in measurement.
+        if (currentPage == null && layoutItemCount > 0) {
+            if (pageItr.hasNext()) {
+                currentPage = pageItr.next();
+            } else {
+                currentPage = createAndAddNewPage();
+            }
+        }
+
         // Remove extra views.
         boolean removed = false;
         while (pageItr.hasNext()) {
