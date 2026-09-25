@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import com.android.launcher3.LauncherPrefs
 import com.android.launcher3.util.ComponentKey
+import com.android.launcher3.model.data.FolderInfo
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -92,6 +93,20 @@ class PrimeDrawerTabsRepository(context: Context) {
         )
         updateTab(tabId) { it.copy(folders = it.folders + folder) }
         return folder
+    }
+
+    fun renameFolderByVisibleContents(folderInfo: FolderInfo, title: String) {
+        val visibleKeys = folderInfo.contents
+            .mapNotNull { it.componentKey?.toString() }
+            .toSet()
+        if (visibleKeys.isEmpty()) return
+        val configuration = getConfiguration()
+        val selectedTab = configuration.tabs.firstOrNull { it.id == configuration.selectedTabId }
+            ?: return
+        val folder = selectedTab.folders.firstOrNull { candidate ->
+            visibleKeys.all { it in candidate.apps }
+        } ?: return
+        renameFolder(selectedTab.id, folder.id, title)
     }
 
     fun renameFolder(tabId: String, folderId: String, title: String) {

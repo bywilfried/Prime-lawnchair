@@ -41,6 +41,9 @@ import android.annotation.ColorInt;
 import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetHostView;
 import android.content.Context;
+
+import app.lawnchair.preferences.PreferenceManager;
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository;
 import android.graphics.Canvas;
 import android.graphics.Insets;
 import android.graphics.Path;
@@ -568,6 +571,10 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         }
         mInfo.setTitle(newTitle, getModelWriter());
         mFolderIcon.onTitleChanged(newTitle);
+        if (isInAppDrawer() && PreferenceManager.getInstance(getContext()).getDrawerTabsEnabled().get()) {
+            PrimeDrawerTabsRepository repository = new PrimeDrawerTabsRepository(getContext());
+            repository.renameFolderByVisibleContents(mInfo, newTitle);
+        }
 
         if (TextUtils.isEmpty(mInfo.title)) {
             mFolderName.setHint(R.string.folder_hint_text);
