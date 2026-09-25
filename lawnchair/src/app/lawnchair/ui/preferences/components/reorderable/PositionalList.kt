@@ -230,9 +230,14 @@ class PositionalListState<T, K : Any>(
         } else if (uiThreshold in (toUiIndex + 1)..fromUiIndex) {
             newCount++
         }
-        notifyChange(newList, newCount.coerceIn(0, newList.size))
+        items = newList
+        activeCount = newCount.coerceIn(0, newList.size)
         haptic.performHapticFeedback(ReorderHapticFeedbackType.MOVE)
         return true
+    }
+
+    internal fun commitReorder() {
+        onOrderChange(items, activeCount)
     }
 
     private val itemIndices by derivedStateOf {
@@ -532,7 +537,10 @@ private fun <T, K : Any> ReorderableCollectionItemScope.ReorderableItemContainer
                         ReorderableDragHandle(
                             scope = this@ReorderableItemContainer,
                             onDragStart = { isSelfDragging = true },
-                            onDragStop = { isSelfDragging = false },
+                            onDragStop = {
+                                isSelfDragging = false
+                                state.commitReorder()
+                            },
                         )
                     }
                 },
