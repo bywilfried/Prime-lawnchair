@@ -74,6 +74,7 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                 repository.reorderFolders(tabId, reordered.map { it.id })
             },
         ) { folder, _, _ ->
+            val interactionSource = remember { MutableInteractionSource() }
             PrimeFolderItem(
                 folder = folder,
                 onRename = { title ->
@@ -83,6 +84,13 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                 onDelete = {
                     repository.deleteFolder(tabId, folder.id)
                     refresh()
+                },
+                interactionSource = interactionSource,
+                dragIndicator = {
+                    ReorderableDragHandle(
+                        interactionSource = interactionSource,
+                        scope = this,
+                    )
                 },
             )
         }
@@ -94,8 +102,9 @@ private fun PrimeFolderItem(
     folder: PrimeDrawerFolder,
     onRename: (String) -> Unit,
     onDelete: () -> Unit,
+    interactionSource: MutableInteractionSource,
+    dragIndicator: @Composable () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     val bottomSheetHandler = bottomSheetHandler
     PreferenceTemplate(
         title = { Text(folder.title) },
@@ -108,12 +117,7 @@ private fun PrimeFolderItem(
                 ),
             )
         },
-        startWidget = {
-            ReorderableDragHandle(
-                interactionSource = interactionSource,
-                scope = this,
-            )
-        },
+        startWidget = dragIndicator,
         endWidget = {
             IconButton(
                 onClick = onDelete,
