@@ -112,6 +112,106 @@ class LawnchairAlphabeticalAppsList<T>(
         // drawer folders or Caddy categories while this mode is active.
         if (prefs.drawerTabsEnabled.get()) {
             var position = startPosition
+            val configuration = primeTabsRepository.getConfiguration()
+            val selectedTab = configuration.tabs.firstOrNull { it.id == configuration.selectedTabId }
+
+            if (selectedTab == null || selectedTab.isSystem) {
+                return super.addAppsWithSections(appList, position)
+            }
+
+            val visibleAppsByKey = appList
+                .mapNotNull { app -> app?.let { it.toComponentKey().toString() to it } }
+                .toMap()
+            val folderItems = selectedTab.folders.mapNotNull { folder ->
+                val folderKeys = if (folder.sortMode == "custom") {
+                    folder.customOrder.filter(folder.apps::contains) +
+                        folder.apps.filterNot(folder.customOrder::contains)
+                } else {
+                    folder.apps.sortedBy { key ->
+                        visibleAppsByKey[key]?.title?.toString()?.lowercase() ?: key
+                    }
+                }
+                val resolvedApps = folderKeys.mapNotNull(visibleAppsByKey::get)
+                if (resolvedApps.size > 1 || (resolvedApps.size < 2 && prefs.primeShowEmptyFolders.get())) {
+                    val folderInfo = FolderInfo().apply {
+                        title = folder.title
+                        resolvedApps.forEach { add(it) }
+                    }
+                    Triple(folder, folderInfo, resolvedApps)
+                } else {
+                    null
+                }
+            }
+
+            if (prefs.primeHideFolderApps.get()) {
+                folderItems.forEach { (_, _, resolvedApps) -> filteredList.addAll(resolvedApps) }
+            }
+            var remainingApps = if (prefs.primeHideFolderApps.get()) {
+                appList.filterNot(filteredList::contains)
+            } else {
+                appList
+            }
+
+            val customIndex = selectedTab.customOrder.withIndex().associate { it.value to it.index }
+            fun addFolders(folders: List<Triple<app.lawnchair.prime.drawer.PrimeDrawerFolder, FolderInfo, List<AppInfo>>>) {
+                folders.forEach { (_, folderInfo, _) ->
+                    mAdapterItems.add(AdapterItem.asFolder(folderInfo))
+                    position++
+                }
+            }
+
+            when (selectedTab.folderPlacement) {
+                "end" -> {
+                    if (selectedTab.sortMode == "custom") {
+                        remainingApps = remainingApps.sortedBy { app ->
+                            app?.toComponentKey()?.toString()?.let { customIndex[it] } ?: Int.MAX_VALUE
+                        }
+                    }
+                    position = super.addAppsWithSections(remainingApps, position)
+                    val orderedFolders = if (selectedTab.sortMode == "custom") {
+                        folderItems.sortedBy { (folder) -> customIndex["folder:" + folder.id] ?: Int.MAX_VALUE }
+                    } else {
+                        folderItems.sortedBy { (folder) -> folder.title.lowercase() }
+                    }
+                    addFolders(orderedFolders)
+                }
+                "mixed" -> {
+                    val appItems = remainingApps.mapNotNull { app ->
+                        app?.let { Triple(it.toComponentKey().toString(), it.title?.toString().orEmpty(), AdapterItem.asApp(it)) }
+                    }
+                    val projectedFolders = folderItems.map { (folder, folderInfo, _) ->
+                        Triple("folder:" + folder.id, folder.title, AdapterItem.asFolder(folderInfo))
+                    }
+                    val mixedItems = (appItems + projectedFolders).sortedWith(
+                        if (selectedTab.sortMode == "custom") {
+                            compareBy { item -> customIndex[item.first] ?: Int.MAX_VALUE }
+                        } else {
+                            compareBy(String.CASE_INSENSITIVE_ORDER) { item -> item.second }
+                        },
+                    )
+                    mixedItems.forEach { (_, _, item) ->
+                        mAdapterItems.add(item)
+                        position++
+                    }
+                }
+                else -> {
+                    val orderedFolders = if (selectedTab.sortMode == "custom") {
+                        folderItems.sortedBy { (folder) -> customIndex["folder:" + folder.id] ?: Int.MAX_VALUE }
+                    } else {
+                        folderItems.sortedBy { (folder) -> folder.title.lowercase() }
+                    }
+                    addFolders(orderedFolders)
+                    if (selectedTab.sortMode == "custom") {
+                        remainingApps = remainingApps.sortedBy { app ->
+                            app?.toComponentKey()?.toString()?.let { customIndex[it] } ?: Int.MAX_VALUE
+                        }
+                    }
+                    return super.addAppsWithSections(remainingApps, position)
+                }
+            }
+            return position
+        }
+        var position = startPosition
             val selectedTabId = primeTabsRepository.getConfiguration().selectedTabId
             val selectedTab = primeTabsRepository.getConfiguration().tabs
                 .firstOrNull { it.id == selectedTabId }
