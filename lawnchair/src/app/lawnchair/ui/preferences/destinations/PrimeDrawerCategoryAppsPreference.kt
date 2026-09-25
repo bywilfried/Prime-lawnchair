@@ -46,6 +46,7 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
             }
         },
         showDuplicateFilter = false,
+        showStandardMenuActions = false,
         preserveActiveOrder = tab.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
