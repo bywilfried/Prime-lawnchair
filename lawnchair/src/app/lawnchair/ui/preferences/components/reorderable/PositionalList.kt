@@ -553,8 +553,10 @@ fun <T, K : Any> PositionalListOverflowMenu(
     state: PositionalListState<T, K>,
     modifier: Modifier = Modifier,
     extraItems: @Composable OverflowMenuScope.(hideMenu: () -> Unit) -> Unit = {},
+    showStandardActions: Boolean = true,
 ) {
     OverflowMenu(modifier) {
+        if (showStandardActions) {
         DropdownMenuItem(
             text = { Text(stringResource(R.string.inverse_selection)) },
             onClick = {
@@ -582,11 +584,13 @@ fun <T, K : Any> PositionalListOverflowMenu(
             },
         )
 
+        }
+
         extraItems(::hideMenu)
 
-        PreferenceDivider(modifier = Modifier.padding(vertical = 8.dp))
+        if (showStandardActions) PreferenceDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        DropdownMenuItem(
+        if (showStandardActions) DropdownMenuItem(
             text = { Text(stringResource(R.string.action_reset)) },
             onClick = {
                 state.reset()
