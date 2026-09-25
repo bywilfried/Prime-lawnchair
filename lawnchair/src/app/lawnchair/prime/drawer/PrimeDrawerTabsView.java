@@ -380,7 +380,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 showAppsDialog(parent, tab);
                 return true;
             }));
-            items.add(option(R.string.prime_category_folders, v -> {
+            items.add(option(R.string.app_drawer_folder, v -> {
                 getContext().startActivity(
                         PreferenceActivity.createIntent(
                                 getContext(),
