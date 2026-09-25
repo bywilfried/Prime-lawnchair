@@ -28,7 +28,11 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
         folderEntry = FolderEntry(
             id = 0,
             title = folder.title,
-            itemComponentKeys = folder.apps.toList(),
+            itemComponentKeys = if (folder.sortMode == "custom") {
+                folder.customOrder.filter(folder.apps::contains) + folder.apps.filterNot(folder.customOrder::contains)
+            } else {
+                folder.apps.sortedBy { key -> apps.firstOrNull { it.key.toString() == key }?.label?.lowercase() ?: key }
+            },
         ),
         apps = categoryApps,
         allFolderPackages = emptySet(),
@@ -38,6 +42,8 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
                 folderId,
                 componentKeys.mapNotNull(ComponentKey::fromString).toSet(),
             )
+            if (folder.sortMode == "custom") repository.setFolderCustomOrder(tabId, folderId, componentKeys)
         },
+        preserveActiveOrder = folder.sortMode == "custom",
     )
 }
