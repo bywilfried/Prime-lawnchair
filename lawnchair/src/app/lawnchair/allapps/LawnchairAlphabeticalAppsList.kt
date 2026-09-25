@@ -212,57 +212,6 @@ class LawnchairAlphabeticalAppsList<T>(
             return position
         }
         var position = startPosition
-            val selectedTabId = primeTabsRepository.getConfiguration().selectedTabId
-            val selectedTab = primeTabsRepository.getConfiguration().tabs
-                .firstOrNull { it.id == selectedTabId }
-
-            if (selectedTab != null && !selectedTab.isSystem) {
-                val folderSequence = when (selectedTab.sortMode) {
-                    "custom" -> selectedTab.folders.sortedBy { folder ->
-                        selectedTab.customOrder.indexOf("folder:" + folder.id).let { if (it < 0) Int.MAX_VALUE else it }
-                    }
-                    else -> selectedTab.folders.sortedBy { it.title.lowercase() }
-                }
-                val visibleAppsByKey = appList
-                    .mapNotNull { app -> app?.let { it.toComponentKey().toString() to it } }
-                    .toMap()
-                folderSequence.forEach { folder ->
-                    val folderKeys = if (folder.sortMode == "custom") {
-                        folder.customOrder.filter(folder.apps::contains) +
-                            folder.apps.filterNot(folder.customOrder::contains)
-                    } else {
-                        folder.apps.sortedBy { key ->
-                            visibleAppsByKey[key]?.title?.toString()?.lowercase() ?: key
-                        }
-                    }
-                    val resolvedApps = folderKeys.mapNotNull(visibleAppsByKey::get)
-
-                    if (resolvedApps.size > 1 || (resolvedApps.size < 2 && prefs.primeShowEmptyFolders.get())) {
-                        val folderInfo = FolderInfo().apply {
-                            title = folder.title
-                            resolvedApps.forEach { add(it) }
-                        }
-                        mAdapterItems.add(AdapterItem.asFolder(folderInfo))
-                        position++
-                        filteredList.addAll(resolvedApps)
-                    }
-                }
-            }
-
-            var remainingApps = if (prefs.primeHideFolderApps.get()) {
-                appList.filterNot(filteredList::contains)
-            } else {
-                appList
-            }
-            if (selectedTab != null && !selectedTab.isSystem && selectedTab.sortMode == "custom") {
-                val order = selectedTab.customOrder.withIndex().associate { it.value to it.index }
-                remainingApps = remainingApps.sortedBy { app ->
-                    app?.toComponentKey()?.toString()?.let { order[it] } ?: Int.MAX_VALUE
-                }
-            }
-            return super.addAppsWithSections(remainingApps, position)
-        }
-        var position = startPosition
 
         // Show app drawer folders only on main profile, to prevent state complexity
         if (isWorkOrPrivateSpace(appList)) return super.addAppsWithSections(appList, position)
