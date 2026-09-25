@@ -48,6 +48,7 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         showDuplicateFilter = false,
         showStandardMenuActions = false,
         preserveActiveOrder = tab.sortMode == "custom",
+        reorderEnabled = tab.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
                 text = { Text("Ordre alphabétique") },
