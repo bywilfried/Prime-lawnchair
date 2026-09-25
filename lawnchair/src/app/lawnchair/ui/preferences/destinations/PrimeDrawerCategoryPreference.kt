@@ -56,6 +56,10 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                     label = stringResource(id = R.string.prime_category_folders_pending),
                     onClick = {},
                 )
+                ClickablePreference(
+                    label = stringResource(id = R.string.prime_tab_advanced) + "*",
+                    onClick = {},
+                )
             }
         }
     }

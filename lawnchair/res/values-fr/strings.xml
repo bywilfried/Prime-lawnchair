@@ -25,6 +25,7 @@
     <string name="prime_tab_set_default">Définir par défaut</string>
     <string name="prime_tab_apps">Applications</string>
     <string name="prime_tab_advanced">Options avancées</string>
+    <string name="prime_tab_options">Options</string>
     <string name="prime_tab_delete">Supprimer</string>\n    <string name="prime_tab_delete_confirm_title">Supprimer l’onglet ?</string>\n    <string name="prime_tab_delete_confirm_message">Supprimer « %1$s » ? Les applications de cet onglet redeviendront non catégorisées sauf si elles appartiennent à un autre onglet.</string>
     <string name="prime_app_categories">Catégories</string>
     <string name="drawer_tabs">Onglets</string>

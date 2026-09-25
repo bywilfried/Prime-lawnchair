@@ -1079,6 +1079,7 @@
     <string name="prime_tab_set_default">Set as default</string>
     <string name="prime_tab_apps">Apps</string>
     <string name="prime_tab_advanced">Advanced options</string>
+    <string name="prime_tab_options">Options</string>
     <string name="prime_tab_delete">Delete</string>\n    <string name="prime_tab_delete_confirm_title">Delete tab?</string>\n    <string name="prime_tab_delete_confirm_message">Delete “%1$s”? Apps in this tab will become unclassified unless they belong to another tab.</string>
     <string name="prime_app_categories">Categories</string>
     <string name="prime_tabs_settings">Tabs</string>

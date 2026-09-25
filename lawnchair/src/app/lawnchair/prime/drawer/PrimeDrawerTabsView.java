@@ -42,6 +42,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import app.lawnchair.preferences.PreferenceManager;
+import app.lawnchair.ui.preferences.PreferenceActivity;
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategory;
 
 /** Prime's independent horizontal drawer tab row. */
 public class PrimeDrawerTabsView extends HorizontalScrollView implements FloatingHeaderRow {
@@ -377,7 +379,14 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 showAppsDialog(parent, tab);
                 return true;
             }));
-            items.add(optionUnimplemented(R.string.prime_tab_advanced));
+            items.add(optionUnimplemented(R.string.prime_category_folders_pending));
+            items.add(option(R.string.prime_tab_options, v -> {
+                getContext().startActivity(
+                        PreferenceActivity.createIntent(
+                                getContext(),
+                                new PrimeDrawerCategory(tab.getId())));
+                return true;
+            }));
             items.add(option(R.string.prime_tab_delete, v -> {
                 showDeleteTabDialog(parent, tab);
                 return true;
