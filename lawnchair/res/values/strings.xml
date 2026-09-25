@@ -1084,6 +1084,10 @@
     <string name="prime_tabs_settings">Tabs</string>
     <string name="prime_categories_manage">Manage categories</string>
     <string name="prime_category_hidden">Hidden</string>
+    <string name="prime_category_settings">Category settings</string>
+    <string name="prime_category_default">Default tab</string>
+    <string name="prime_category_name">Name</string>
+    <string name="prime_category_folders_pending">Folders*</string>
     <string name="prime_tabs_open_behavior">When opening the app drawer</string>
     <string name="prime_tabs_open_first">First tab</string>
     <string name="prime_tabs_open_last">Last viewed tab</string>

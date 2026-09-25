@@ -16,10 +16,12 @@ import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.prime.drawer.PrimeDrawerTab
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import app.lawnchair.ui.preferences.components.reorderable.ReorderableDragHandle
 import app.lawnchair.ui.preferences.components.reorderable.ReorderablePreferenceGroup
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategory
 import com.android.launcher3.R
 
 @Composable
@@ -30,6 +32,7 @@ fun PrimeDrawerCategoriesPreference() {
     val hideAll by prefs.drawerTabsHideAll.getAdapter().state
     val hideUnclassified by prefs.drawerTabsHideUnclassified.getAdapter().state
     var tabs by remember { mutableStateOf(repository.getConfiguration().tabs) }
+    val navController = LocalNavController.current
 
     PreferenceLayout(
         label = stringResource(id = R.string.prime_categories_manage),
@@ -54,6 +57,7 @@ fun PrimeDrawerCategoriesPreference() {
                 tab = tab,
                 hidden = hidden,
                 interactionSource = interactionSource,
+                onClick = { navController.navigate(PrimeDrawerCategory(tab.id)) },
                 dragIndicator = {
                     ReorderableDragHandle(
                         interactionSource = interactionSource,
@@ -70,6 +74,7 @@ private fun PrimeCategoryItem(
     tab: PrimeDrawerTab,
     hidden: Boolean,
     interactionSource: MutableInteractionSource,
+    onClick: () -> Unit,
     dragIndicator: @Composable () -> Unit,
 ) {
     val title = when (tab.id) {
@@ -99,6 +104,7 @@ private fun PrimeCategoryItem(
             null
         },
         startWidget = dragIndicator,
+        onClick = onClick,
         interactionSource = interactionSource,
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
