@@ -74,6 +74,7 @@ fun SelectAppsForDrawerFolder(
     modifier: Modifier = Modifier,
     preserveActiveOrder: Boolean = false,
     extraMenuContent: @Composable ((hideMenu: () -> Unit) -> Unit)? = null,
+    showDuplicateFilter: Boolean = true,
 ) {
     var filterNonUniqueItems by remember { mutableStateOf(true) }
 
@@ -130,16 +131,18 @@ fun SelectAppsForDrawerFolder(
                     state = state,
                 ) { hideMenu ->
                     extraMenuContent?.invoke(hideMenu)
-                    DropdownMenuItem(
-                        onClick = {
-                            filterNonUniqueItems = !filterNonUniqueItems
-                            hideMenu()
-                        },
-                        trailingIcon = {
-                            if (filterNonUniqueItems) Icon(Icons.Rounded.Check, null)
-                        },
-                        text = { Text(stringResource(R.string.folders_filter_duplicates)) },
-                    )
+                    if (showDuplicateFilter) {
+                        DropdownMenuItem(
+                            onClick = {
+                                filterNonUniqueItems = !filterNonUniqueItems
+                                hideMenu()
+                            },
+                            trailingIcon = {
+                                if (filterNonUniqueItems) Icon(Icons.Rounded.Check, null)
+                            },
+                            text = { Text(stringResource(R.string.folders_filter_duplicates)) },
+                        )
+                    }
                 }
             }
         },
