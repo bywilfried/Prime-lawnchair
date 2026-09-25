@@ -535,6 +535,11 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         return mInfo.container == ItemInfo.NO_ID;
     }
 
+    /** Prime can keep folders with zero or one item instead of collapsing them. */
+    private boolean shouldKeepSingleItemFolder() {
+        return PreferenceManager.getInstance(getContext()).getPrimeShowEmptyFolders().get();
+    }
+
     /**
      * LC: App drawer folders live in Lawnchair's own database and are not part of the
      * launcher model, so writing them through ModelWriter can collide with an unrelated
@@ -703,9 +708,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         mFolderIcon.post(() -> {
             // Prime drawer folders are virtual projections, not workspace folders. Keep them
             // intact with zero or one item instead of converting the final item to Workspace.
-            if (getItemCount() <= 1
-                    && !(isInAppDrawer()
-                    && PreferenceManager.getInstance(getContext()).getDrawerTabsEnabled().get())) {
+            if (getItemCount() <= 1 && !shouldKeepSingleItemFolder()) {
                 replaceFolderWithFinalItem();
             }
         });
@@ -1135,7 +1138,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
             rearrangeChildren();
             mRearrangeOnClose = false;
         }
-        if (getItemCount() <= 1) {
+        if (getItemCount() <= 1 && !shouldKeepSingleItemFolder()) {
             if (!mIsDragInProgress && !mSuppressFolderDeletion) {
                 replaceFolderWithFinalItem();
             } else if (mIsDragInProgress) {
@@ -1334,7 +1337,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
     public void onDropCompleted(final View target, final DragObject d,
             final boolean success) {
         if (success) {
-            if (getItemCount() <= 1) {
+            if (getItemCount() <= 1 && !shouldKeepSingleItemFolder()) {
                 mDeleteFolderOnDropCompleted = true;
             }
             if (mDeleteFolderOnDropCompleted && !mItemAddedBackToSelfViaIcon
@@ -1761,7 +1764,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
             } else {
                 rearrangeChildren();
             }
-            if (getItemCount() <= 1) {
+            if (getItemCount() <= 1 && !shouldKeepSingleItemFolder()) {
                 if (mIsOpen) {
                     close(true);
                 } else {
