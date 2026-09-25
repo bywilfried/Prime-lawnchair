@@ -109,12 +109,9 @@ class LawnchairAlphabeticalAppsList<T>(
             if (selectedTab != null && !selectedTab.isSystem) {
                 selectedTab.folders.forEach { folder ->
                     val visibleAppsByKey = appList
-                        .mapNotNull { app -> app?.let { it.toComponentKey() to it } }
+                        .mapNotNull { app -> app?.let { it.toComponentKey().toString() to it } }
                         .toMap()
-                    val resolvedApps = folder.apps.mapNotNull { keyString ->
-                        val componentKey = ComponentKey.fromString(keyString) ?: return@mapNotNull null
-                        visibleAppsByKey[componentKey]
-                    }
+                    val resolvedApps = folder.apps.mapNotNull(visibleAppsByKey::get)
 
                     if (resolvedApps.size > 1 || (resolvedApps.size < 2 && prefs.primeShowEmptyFolders.get())) {
                         val folderInfo = FolderInfo().apply {
