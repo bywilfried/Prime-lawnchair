@@ -897,8 +897,9 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         Log.d("b/383526431", "animateOpen: content child count after cancelling"
                 + " animation: " + mContent.getTotalChildCount());
 
-        AnimatorSet animatorSet = getFolderAnimationManager()
-                .createAnimatorSet(/* isOpening */ true);
+        AnimatorSet animatorSet = shouldKeepSingleItemFolder() && getItemCount() <= 1
+                ? new AnimatorSet()
+                : getFolderAnimationManager().createAnimatorSet(/* isOpening */ true);
 
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -1480,7 +1481,13 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
 
     @VisibleForTesting
     int getFolderWidth() {
-        return getPaddingLeft() + getPaddingRight() + mContent.getDesiredWidth();
+        int contentWidth = mContent.getDesiredWidth();
+        // Prime single-item folders should keep the same minimum footprint as a normal folder.
+        // This also leaves enough room for the folder title in the footer.
+        if (shouldKeepSingleItemFolder() && getItemCount() <= 1) {
+            contentWidth = Math.max(contentWidth, MIN_CONTENT_DIMEN);
+        }
+        return getPaddingLeft() + getPaddingRight() + contentWidth;
     }
 
     @VisibleForTesting
