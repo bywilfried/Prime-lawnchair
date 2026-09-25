@@ -6,15 +6,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders
 import com.android.launcher3.R
 
 @Composable
 fun PrimeDrawerCategoryPreference(tabId: String) {
     val context = LocalContext.current
     val repository = remember(context) { PrimeDrawerTabsRepository(context) }
+    val navController = LocalNavController.current
     val configuration = repository.getConfiguration()
     val tab = configuration.tabs.firstOrNull { it.id == tabId } ?: return
     val title = when (tab.id) {
@@ -53,8 +56,8 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                     onClick = {},
                 )
                 ClickablePreference(
-                    label = stringResource(id = R.string.prime_category_folders_pending),
-                    onClick = {},
+                    label = stringResource(id = R.string.app_drawer_folder),
+                    onClick = { navController.navigate(PrimeDrawerCategoryFolders(tab.id)) },
                 )
                 ClickablePreference(
                     label = stringResource(id = R.string.prime_tab_advanced) + "*",
