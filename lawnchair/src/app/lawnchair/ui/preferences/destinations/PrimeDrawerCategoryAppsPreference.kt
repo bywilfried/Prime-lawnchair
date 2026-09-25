@@ -45,6 +45,7 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
                 repository.setTabCustomOrder(tabId, componentKeys)
             }
         },
+        showDuplicateFilter = false,
         preserveActiveOrder = tab.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
