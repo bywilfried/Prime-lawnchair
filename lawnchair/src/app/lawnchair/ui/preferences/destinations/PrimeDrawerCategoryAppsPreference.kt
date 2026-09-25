@@ -1,5 +1,10 @@
 package app.lawnchair.ui.preferences.destinations
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -41,5 +46,32 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
             }
         },
         preserveActiveOrder = tab.sortMode == "custom",
+        extraMenuContent = { hideMenu ->
+            DropdownMenuItem(
+                text = { Text("Ordre alphabétique") },
+                trailingIcon = { if (tab.sortMode == "alphabetical") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setTabSortMode(tabId, "alphabetical"); hideMenu() },
+            )
+            DropdownMenuItem(
+                text = { Text("Ordre personnalisé") },
+                trailingIcon = { if (tab.sortMode == "custom") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setTabSortMode(tabId, "custom"); hideMenu() },
+            )
+            DropdownMenuItem(
+                text = { Text("Dossiers au début") },
+                trailingIcon = { if (tab.folderPlacement == "start") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setTabFolderPlacement(tabId, "start"); hideMenu() },
+            )
+            DropdownMenuItem(
+                text = { Text("Dossiers à la fin") },
+                trailingIcon = { if (tab.folderPlacement == "end") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setTabFolderPlacement(tabId, "end"); hideMenu() },
+            )
+            DropdownMenuItem(
+                text = { Text("Dossiers personnalisés") },
+                trailingIcon = { if (tab.folderPlacement == "mixed") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setTabFolderPlacement(tabId, "mixed"); hideMenu() },
+            )
+        },
     )
 }
