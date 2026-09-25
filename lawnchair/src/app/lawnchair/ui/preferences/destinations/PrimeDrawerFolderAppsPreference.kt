@@ -49,6 +49,7 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
             )
             if (folder.sortMode == "custom") repository.setFolderCustomOrder(tabId, folderId, componentKeys)
         },
+        showDuplicateFilter = false,
         preserveActiveOrder = folder.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
