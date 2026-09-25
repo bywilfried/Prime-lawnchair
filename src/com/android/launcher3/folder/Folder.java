@@ -536,7 +536,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
     }
 
     /** Prime can keep folders with zero or one item instead of collapsing them. */
-    private boolean shouldKeepSingleItemFolder() {
+    boolean shouldKeepSingleItemFolder() {
         return PreferenceManager.getInstance(getContext()).getPrimeShowEmptyFolders().get();
     }
 
