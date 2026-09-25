@@ -6,6 +6,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import app.lawnchair.data.folder.FolderEntry
@@ -18,8 +20,18 @@ import com.android.launcher3.util.ComponentKey
 fun PrimeDrawerCategoryAppsPreference(tabId: String) {
     val context = LocalContext.current
     val repository = remember(context) { PrimeDrawerTabsRepository(context) }
+    val configuration = remember { mutableStateOf(repository.getConfiguration()) }
+    DisposableEffect(repository) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == PrimeDrawerTabsRepository.PREF_CONFIGURATION) {
+                configuration.value = repository.getConfiguration()
+            }
+        }
+        repository.registerConfigurationChangeListener(listener)
+        onDispose { repository.unregisterConfigurationChangeListener(listener) }
+    }
     val apps = appsState().value
-    val tab = repository.getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return
+    val tab = configuration.value.tabs.firstOrNull { it.id == tabId } ?: return
     val hideFolderApps = PreferenceManager.getInstance(context).primeHideFolderApps.get()
     val folderAppKeys = remember(tab.folders) {
         tab.folders.flatMapTo(mutableSetOf()) { it.apps }
