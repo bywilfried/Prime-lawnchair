@@ -171,6 +171,9 @@ data class PrimeDrawerCategory(val tabId: String) : PreferenceRoute
 data class PrimeDrawerCategoryFolders(val tabId: String) : PreferenceRoute
 
 @Serializable
+data class PrimeDrawerCategoryApps(val tabId: String) : PreferenceRoute
+
+@Serializable
 data class PrimeDrawerFolderApps(val tabId: String, val folderId: String) : PreferenceRoute
 
 @Serializable
