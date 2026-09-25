@@ -49,6 +49,7 @@ import app.lawnchair.ui.preferences.destinations.PickAppForGesture
 import app.lawnchair.ui.preferences.destinations.PredictionsPreferences
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoriesPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryPreference
+import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryAppsPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDevelopmentOptionsPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryFoldersPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerFolderAppsPreference
@@ -166,6 +167,10 @@ fun PreferenceNavigation(
         composable<PrimeDrawerCategory> { backStackEntry ->
             val route: PrimeDrawerCategory = backStackEntry.toRoute()
             PrimeDrawerCategoryPreference(route.tabId)
+        }
+        composable<PrimeDrawerCategoryApps> { backStackEntry ->
+            val route: PrimeDrawerCategoryApps = backStackEntry.toRoute()
+            PrimeDrawerCategoryAppsPreference(route.tabId)
         }
         composable<PrimeDrawerCategoryFolders> { backStackEntry ->
             val route: PrimeDrawerCategoryFolders = backStackEntry.toRoute()
