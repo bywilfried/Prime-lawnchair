@@ -60,27 +60,6 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                     onClick = { renameOpen = true },
                 )
                 ClickablePreference(
-                    label = "Tri",
-                    subtitle = if (tab.sortMode == "custom") "Personnalisé" else "Alphabétique",
-                    onClick = {
-                        repository.setTabSortMode(tab.id, if (tab.sortMode == "custom") "alphabetical" else "custom")
-                        configuration = repository.getConfiguration()
-                    },
-                )
-                ClickablePreference(
-                    label = "Position des dossiers",
-                    subtitle = when (tab.folderPlacement) {
-                        "end" -> "À la fin"
-                        "mixed" -> "Comme les applications"
-                        else -> "Au début"
-                    },
-                    onClick = {
-                        val next = when (tab.folderPlacement) { "start" -> "end"; "end" -> "mixed"; else -> "start" }
-                        repository.setTabFolderPlacement(tab.id, next)
-                        configuration = repository.getConfiguration()
-                    },
-                )
-                ClickablePreference(
                     label = stringResource(id = R.string.prime_tab_apps),
                     subtitle = context.resources.getQuantityString(
                         R.plurals.apps_count,
