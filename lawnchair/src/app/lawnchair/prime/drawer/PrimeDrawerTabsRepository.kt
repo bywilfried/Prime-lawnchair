@@ -89,7 +89,28 @@ class PrimeDrawerTabsRepository(context: Context) {
 
     fun setTabApps(tabId: String, apps: Set<ComponentKey>) {
         if (tabId == ALL_TAB_ID || tabId == UNCLASSIFIED_TAB_ID) return
-        updateTab(tabId) { tab -> tab.copy(apps = apps.mapTo(linkedSetOf(), ComponentKey::toString)) }
+        updateTab(tabId) { tab ->
+            val keys = apps.mapTo(linkedSetOf(), ComponentKey::toString)
+            tab.copy(
+                apps = keys,
+                customOrder = tab.customOrder.filter(keys::contains) + keys.filterNot(tab.customOrder::contains),
+            )
+        }
+    }
+
+    fun setTabSortMode(tabId: String, mode: String) {
+        updateUserTab(tabId) { it.copy(sortMode = mode) }
+    }
+
+    fun setTabFolderPlacement(tabId: String, placement: String) {
+        updateUserTab(tabId) { it.copy(folderPlacement = placement) }
+    }
+
+    fun setTabCustomOrder(tabId: String, orderedKeys: List<String>) {
+        updateUserTab(tabId) { tab ->
+            val members = tab.apps + tab.folders.map { "folder:" + it.id }
+            tab.copy(customOrder = orderedKeys.filter(members::contains) + members.filterNot(orderedKeys::contains))
+        }
     }
 
     fun createFolder(tabId: String, title: String): PrimeDrawerFolder? {
@@ -218,6 +239,9 @@ class PrimeDrawerTabsRepository(context: Context) {
                     put("id", tab.id)
                     put("title", tab.title)
                     put("apps", JSONArray(tab.apps.toList()))
+                    put("sortMode", tab.sortMode)
+                    put("folderPlacement", tab.folderPlacement)
+                    put("customOrder", JSONArray(tab.customOrder))
                     put("folders", JSONArray().apply {
                         tab.folders.forEach { folder ->
                             put(JSONObject().apply {
@@ -245,6 +269,9 @@ class PrimeDrawerTabsRepository(context: Context) {
                             id = tab.getString("id"),
                             title = tab.optString("title"),
                             apps = tab.optJSONArray("apps").toStringSet(),
+                            sortMode = tab.optString("sortMode", "alphabetical"),
+                            folderPlacement = tab.optString("folderPlacement", "start"),
+                            customOrder = tab.optJSONArray("customOrder").toStringList(),
                             folders = tab.optJSONArray("folders").toFolders(),
                         ),
                     )
@@ -256,6 +283,11 @@ class PrimeDrawerTabsRepository(context: Context) {
                 selectedTabId = json.optString("selectedTabId", ALL_TAB_ID),
             ).normalized()
         }.getOrElse { PrimeDrawerTabsConfiguration.initial() }
+    }
+
+    private fun JSONArray?.toStringList(): List<String> = buildList {
+        val array = this@toStringList ?: return@buildList
+        for (index in 0 until array.length()) add(array.getString(index))
     }
 
     private fun JSONArray?.toStringSet(): Set<String> = buildSet {
@@ -342,6 +374,9 @@ data class PrimeDrawerTab(
     val id: String,
     val title: String = "",
     val apps: Set<String> = emptySet(),
+    val sortMode: String = "alphabetical",
+    val folderPlacement: String = "start",
+    val customOrder: List<String> = emptyList(),
     val folders: List<PrimeDrawerFolder> = emptyList(),
 ) {
     val isSystem: Boolean
