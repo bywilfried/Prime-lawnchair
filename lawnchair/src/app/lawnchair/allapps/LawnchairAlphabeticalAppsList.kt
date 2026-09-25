@@ -117,7 +117,13 @@ class LawnchairAlphabeticalAppsList<T>(
                 .firstOrNull { it.id == selectedTabId }
 
             if (selectedTab != null && !selectedTab.isSystem) {
-                selectedTab.folders.forEach { folder ->
+                val folderSequence = when (selectedTab.sortMode) {
+                    "custom" -> selectedTab.folders.sortedBy { folder ->
+                        selectedTab.customOrder.indexOf("folder:" + folder.id).let { if (it < 0) Int.MAX_VALUE else it }
+                    }
+                    else -> selectedTab.folders.sortedBy { it.title.lowercase() }
+                }
+                folderSequence.forEach { folder ->
                     val visibleAppsByKey = appList
                         .mapNotNull { app -> app?.let { it.toComponentKey().toString() to it } }
                         .toMap()
@@ -135,10 +141,16 @@ class LawnchairAlphabeticalAppsList<T>(
                 }
             }
 
-            val remainingApps = if (prefs.primeHideFolderApps.get()) {
+            var remainingApps = if (prefs.primeHideFolderApps.get()) {
                 appList.filterNot(filteredList::contains)
             } else {
                 appList
+            }
+            if (selectedTab != null && !selectedTab.isSystem && selectedTab.sortMode == "custom") {
+                val order = selectedTab.customOrder.withIndex().associate { it.value to it.index }
+                remainingApps = remainingApps.sortedBy { app ->
+                    app?.toComponentKey()?.toString()?.let { order[it] } ?: Int.MAX_VALUE
+                }
             }
             return super.addAppsWithSections(remainingApps, position)
         }
