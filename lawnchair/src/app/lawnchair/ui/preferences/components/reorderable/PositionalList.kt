@@ -432,12 +432,16 @@ fun <T, K : Any> PositionalList(
                 state = reorderableState,
                 key = item.id,
                 enabled = reorderEnabled,
-                modifier = Modifier.semanticReorderActions(
-                    index,
-                    state,
-                    stringResource(R.string.reorderable_move_up),
-                    stringResource(R.string.reorderable_move_down),
-                ),
+                modifier = if (reorderEnabled) {
+                    Modifier.semanticReorderActions(
+                        index,
+                        state,
+                        stringResource(R.string.reorderable_move_up),
+                        stringResource(R.string.reorderable_move_down),
+                    )
+                } else {
+                    Modifier
+                },
             ) {
                 ReorderableItemContainer(
                     item = item,
