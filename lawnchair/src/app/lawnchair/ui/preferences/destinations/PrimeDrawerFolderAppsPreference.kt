@@ -1,0 +1,36 @@
+package app.lawnchair.ui.preferences.destinations
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import app.lawnchair.data.folder.FolderEntry
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.util.appsState
+import com.android.launcher3.util.ComponentKey
+
+@Composable
+fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
+    val context = LocalContext.current
+    val repository = remember(context) { PrimeDrawerTabsRepository(context) }
+    val appsState = appsState()
+    val apps = appsState.value
+    val tab = repository.getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return
+    val folder = tab.folders.firstOrNull { it.id == folderId } ?: return
+
+    SelectAppsForDrawerFolder(
+        folderEntry = FolderEntry(
+            id = 0,
+            title = folder.title,
+            itemComponentKeys = folder.apps.toList(),
+        ),
+        apps = apps,
+        allFolderPackages = emptySet(),
+        onUpdate = { _, componentKeys ->
+            repository.setFolderApps(
+                tabId,
+                folderId,
+                componentKeys.mapNotNull(ComponentKey::fromString).toSet(),
+            )
+        },
+    )
+}

@@ -18,11 +18,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerFolder
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import app.lawnchair.ui.preferences.components.reorderable.ReorderableDragHandle
 import app.lawnchair.ui.preferences.components.reorderable.ReorderablePreferenceGroup
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderApps
 import app.lawnchair.ui.util.bottomSheetHandler
 import com.android.launcher3.R
 
@@ -30,6 +32,7 @@ import com.android.launcher3.R
 fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
     val context = LocalContext.current
     val repository = remember(context) { PrimeDrawerTabsRepository(context) }
+    val navController = LocalNavController.current
     val tab = repository.getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return
     if (tab.isSystem) return
     var folders by remember { mutableStateOf(tab.folders) }
@@ -85,6 +88,9 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                     repository.deleteFolder(tabId, folder.id)
                     refresh()
                 },
+                onManageApps = {
+                    navController.navigate(PrimeDrawerFolderApps(tabId, folder.id))
+                },
                 interactionSource = interactionSource,
                 dragIndicator = {
                     ReorderableDragHandle(
@@ -102,6 +108,7 @@ private fun PrimeFolderItem(
     folder: PrimeDrawerFolder,
     onRename: (String) -> Unit,
     onDelete: () -> Unit,
+    onManageApps: () -> Unit,
     interactionSource: MutableInteractionSource,
     dragIndicator: @Composable () -> Unit,
 ) {
@@ -137,9 +144,8 @@ private fun PrimeFolderItem(
                     initialTitle = folder.title,
                     itemCount = folder.apps.size,
                     onRename = { _, title -> onRename(title) },
-                    onNavigate = {},
+                    onNavigate = { onManageApps() },
                     onDismiss = { bottomSheetHandler.hide() },
-                    hideAppPicker = true,
                 )
             }
         },

@@ -171,6 +171,9 @@ data class PrimeDrawerCategory(val tabId: String) : PreferenceRoute
 data class PrimeDrawerCategoryFolders(val tabId: String) : PreferenceRoute
 
 @Serializable
+data class PrimeDrawerFolderApps(val tabId: String, val folderId: String) : PreferenceRoute
+
+@Serializable
 data object AppDrawerFolder : PreferenceRoute, PreferenceDeepLink {
     override val deepLink = "$URI/app-drawer-folder"
 }
