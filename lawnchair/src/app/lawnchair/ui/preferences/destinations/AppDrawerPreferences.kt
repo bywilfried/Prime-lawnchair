@@ -115,6 +115,11 @@ fun AppDrawerPreferences(
                         label = stringResource(id = R.string.prime_tabs_swipe_enabled),
                         adapter = prefs.drawerTabsSwipeEnabled.getAdapter(),
                     )
+                    SwitchPreference(
+                        label = stringResource(id = R.string.apps_in_folder_label),
+                        description = stringResource(id = R.string.apps_in_folder_description),
+                        adapter = prefs.primeHideFolderApps.getAdapter(),
+                    )
                     val hideAllAdapter = prefs.drawerTabsHideAll.getAdapter()
                     val hideUnclassifiedAdapter = prefs.drawerTabsHideUnclassified.getAdapter()
                     val hasUserTabs = PrimeDrawerTabsRepository(context)
