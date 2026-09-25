@@ -77,6 +77,7 @@ fun SelectAppsForDrawerFolder(
     extraMenuContent: @Composable ((hideMenu: () -> Unit) -> Unit)? = null,
     showDuplicateFilter: Boolean = true,
     showStandardMenuActions: Boolean = true,
+    reorderEnabled: Boolean = true,
 ) {
     var filterNonUniqueItems by remember { mutableStateOf(true) }
 
@@ -132,9 +133,9 @@ fun SelectAppsForDrawerFolder(
                 PositionalListOverflowMenu(
                     state = state,
                     showStandardActions = showStandardMenuActions,
-                ) { hideMenu ->
-                    extraMenuContent?.invoke(hideMenu)
-                    if (showDuplicateFilter) {
+                    extraItems = { hideMenu ->
+                        extraMenuContent?.invoke(hideMenu)
+                        if (showDuplicateFilter) {
                         DropdownMenuItem(
                             onClick = {
                                 filterNonUniqueItems = !filterNonUniqueItems
@@ -145,8 +146,9 @@ fun SelectAppsForDrawerFolder(
                             },
                             text = { Text(stringResource(R.string.folders_filter_duplicates)) },
                         )
-                    }
-                }
+                        }
+                    },
+                )
             }
         },
         isExpandedScreen = LocalIsExpandedScreen.current,
@@ -167,7 +169,7 @@ fun SelectAppsForDrawerFolder(
                 PositionalAppListPreference(
                     state = state,
                     contentPadding = contentPadding,
-                    reorderEnabled = preserveActiveOrder,
+                    reorderEnabled = reorderEnabled,
                 )
             }
         }
