@@ -135,7 +135,11 @@ class LawnchairAlphabeticalAppsList<T>(
                 }
             }
 
-            val remainingApps = appList.filterNot(filteredList::contains)
+            val remainingApps = if (prefs.primeHideFolderApps.get()) {
+                appList.filterNot(filteredList::contains)
+            } else {
+                appList
+            }
             return super.addAppsWithSections(remainingApps, position)
         }
         var position = startPosition
