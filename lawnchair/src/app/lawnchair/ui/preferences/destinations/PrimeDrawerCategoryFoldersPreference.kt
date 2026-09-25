@@ -89,6 +89,7 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                     refresh()
                 },
                 onManageApps = {
+                    bottomSheetHandler.hide()
                     navController.navigate(PrimeDrawerFolderApps(tabId, folder.id))
                 },
                 interactionSource = interactionSource,
