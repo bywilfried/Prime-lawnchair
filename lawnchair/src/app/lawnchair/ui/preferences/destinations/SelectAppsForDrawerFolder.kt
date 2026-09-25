@@ -194,5 +194,6 @@ private fun PositionalAppListPreference(
         },
         contentPadding = contentPadding,
         modifier = modifier,
+        reorderEnabled = reorderEnabled,
     )
 }
