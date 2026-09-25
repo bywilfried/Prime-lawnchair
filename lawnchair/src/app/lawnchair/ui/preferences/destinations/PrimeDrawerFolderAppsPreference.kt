@@ -14,6 +14,13 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
     val repository = remember(context) { PrimeDrawerTabsRepository(context) }
     val appsState = appsState()
     val apps = appsState.value
+    val categoryAppKeys = buildSet {
+        addAll(tab.apps)
+        tab.folders.forEach { addAll(it.apps) }
+    }
+    val categoryApps = apps.filter { app ->
+        app.toComponentKey().toString() in categoryAppKeys
+    }
     val tab = repository.getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return
     val folder = tab.folders.firstOrNull { it.id == folderId } ?: return
 
@@ -23,7 +30,7 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
             title = folder.title,
             itemComponentKeys = folder.apps.toList(),
         ),
-        apps = apps,
+        apps = categoryApps,
         allFolderPackages = emptySet(),
         onUpdate = { _, componentKeys ->
             repository.setFolderApps(
