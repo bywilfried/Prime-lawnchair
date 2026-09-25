@@ -158,10 +158,15 @@ class PrimeDrawerTabsRepository(context: Context) {
             UNCLASSIFIED_TAB_ID -> configuration.tabs
                 .asSequence()
                 .filterNot { it.isSystem }
-                .none { componentKey.toString() in it.apps }
+                .none { tab ->
+                    componentKey.toString() in tab.apps ||
+                        tab.folders.any { componentKey.toString() in it.apps }
+                }
             else -> configuration.tabs.firstOrNull { it.id == tabId }
-                ?.apps
-                ?.contains(componentKey.toString()) == true
+                ?.let { tab ->
+                    componentKey.toString() in tab.apps ||
+                        tab.folders.any { componentKey.toString() in it.apps }
+                } == true
         }
     }
 
