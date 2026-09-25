@@ -62,6 +62,7 @@ fun SelectAppsForDrawerFolder(
             viewModel.updateFolderItems(folderInfoId, title, componentKeys)
         },
         modifier = modifier,
+        reorderEnabled = reorderEnabled,
     )
 }
 
@@ -75,6 +76,7 @@ fun SelectAppsForDrawerFolder(
     preserveActiveOrder: Boolean = false,
     extraMenuContent: @Composable ((hideMenu: () -> Unit) -> Unit)? = null,
     showDuplicateFilter: Boolean = true,
+    showStandardMenuActions: Boolean = true,
 ) {
     var filterNonUniqueItems by remember { mutableStateOf(true) }
 
@@ -129,6 +131,7 @@ fun SelectAppsForDrawerFolder(
             if (!loading) {
                 PositionalListOverflowMenu(
                     state = state,
+                    showStandardActions = showStandardMenuActions,
                 ) { hideMenu ->
                     extraMenuContent?.invoke(hideMenu)
                     if (showDuplicateFilter) {
@@ -164,6 +167,7 @@ fun SelectAppsForDrawerFolder(
                 PositionalAppListPreference(
                     state = state,
                     contentPadding = contentPadding,
+                    reorderEnabled = preserveActiveOrder,
                 )
             }
         }
@@ -175,6 +179,7 @@ private fun PositionalAppListPreference(
     state: PositionalListState<App, String>,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    reorderEnabled: Boolean = true,
 ) {
     PositionalList(
         state = state,
