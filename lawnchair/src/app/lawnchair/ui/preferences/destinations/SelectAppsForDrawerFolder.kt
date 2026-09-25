@@ -62,7 +62,6 @@ fun SelectAppsForDrawerFolder(
             viewModel.updateFolderItems(folderInfoId, title, componentKeys)
         },
         modifier = modifier,
-        reorderEnabled = reorderEnabled,
     )
 }
 
