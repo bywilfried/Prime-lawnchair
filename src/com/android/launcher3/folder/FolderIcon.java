@@ -247,6 +247,16 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
     public void getPreviewBounds(Rect outBounds) {
         mPreviewItemManager.recomputePreviewDrawingParams();
         mBackground.getBounds(outBounds);
+        // Prime can keep empty folders when the development option is enabled. Empty folders have
+        // no reference preview drawable, so their preview background may not have been initialized
+        // yet when a drawer folder is dropped on Workspace. Initialize it from the destination icon
+        // geometry so DragLayer never computes a 0 / 0 drop scale.
+        if (outBounds.isEmpty()
+                && mInfo.getContents().isEmpty()
+                && PreferenceManager.getInstance(getContext()).getPrimeShowEmptyFolders().get()) {
+            mBackground.setup(getContext(), mActivity, this, getMeasuredWidth(), getPaddingTop());
+            mBackground.getBounds(outBounds);
+        }
         // The preview items go outside of the bounds of the background.
         Utilities.scaleRectAboutCenter(outBounds, ICON_OVERLAP_FACTOR);
     }
