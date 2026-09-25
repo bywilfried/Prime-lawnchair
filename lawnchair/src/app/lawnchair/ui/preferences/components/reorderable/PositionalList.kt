@@ -388,6 +388,7 @@ fun <T, K : Any> PositionalList(
     ) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    reorderEnabled: Boolean = true,
 ) {
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -430,6 +431,7 @@ fun <T, K : Any> PositionalList(
             ReorderableItem(
                 state = reorderableState,
                 key = item.id,
+                enabled = reorderEnabled,
                 modifier = Modifier.semanticReorderActions(
                     index,
                     state,
@@ -447,6 +449,7 @@ fun <T, K : Any> PositionalList(
                     isLast = index == (if (isActive) state.activeCount else state.items.size) - 1,
                     isAnyDragging = reorderableState.isAnyItemDragging,
                     content = itemContent,
+                    reorderEnabled = reorderEnabled,
                 )
             }
         }
@@ -497,6 +500,7 @@ private fun <T, K : Any> ReorderableCollectionItemScope.ReorderableItemContainer
     isFirst: Boolean = true,
     isLast: Boolean = true,
     isAnyDragging: Boolean = false,
+    reorderEnabled: Boolean = true,
     content: @Composable ReorderableCollectionItemScope.(
         item: T,
         dragHandle: @Composable () -> Unit,
@@ -520,11 +524,13 @@ private fun <T, K : Any> ReorderableCollectionItemScope.ReorderableItemContainer
             content(
                 item.data,
                 {
-                    ReorderableDragHandle(
-                        scope = this@ReorderableItemContainer,
-                        onDragStart = { isSelfDragging = true },
-                        onDragStop = { isSelfDragging = false },
-                    )
+                    if (reorderEnabled) {
+                        ReorderableDragHandle(
+                            scope = this@ReorderableItemContainer,
+                            onDragStart = { isSelfDragging = true },
+                            onDragStop = { isSelfDragging = false },
+                        )
+                    }
                 },
                 {
                     IconButton(
