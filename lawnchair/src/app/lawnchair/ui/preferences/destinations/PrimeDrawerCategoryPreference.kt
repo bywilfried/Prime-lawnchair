@@ -115,26 +115,31 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
 
     if (appsOpen) {
         val selected = remember(tab.apps, appsOpen) { mutableStateOf(tab.apps) }
-        AlertDialog(
+        val sortedApps = remember(apps) { apps.sortedBy { it.label.lowercase() } }
+        androidx.compose.material3.AlertDialog(
             onDismissRequest = { appsOpen = false },
-            title = { Text(stringResource(id = R.string.prime_tab_apps)) },
+            title = { Text(tab.title) },
             text = {
                 androidx.compose.foundation.lazy.LazyColumn {
-                    items(apps.size) { index ->
-                        val app = apps[index]
+                    items(sortedApps.size) { index ->
+                        val app = sortedApps[index]
                         val key = app.key.toString()
-                        androidx.compose.material3.Checkbox(
-                            checked = key in selected.value,
-                            onCheckedChange = { checked ->
-                                selected.value = if (checked) selected.value + key else selected.value - key
+                        androidx.compose.material3.ListItem(
+                            headlineContent = { Text(app.label) },
+                            leadingContent = {
+                                androidx.compose.material3.Checkbox(
+                                    checked = key in selected.value,
+                                    onCheckedChange = { checked ->
+                                        selected.value = if (checked) selected.value + key else selected.value - key
+                                    },
+                                )
                             },
                         )
-                        Text(app.label)
                     }
                 }
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         repository.setTabApps(
                             tab.id,
