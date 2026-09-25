@@ -73,6 +73,7 @@ fun SelectAppsForDrawerFolder(
     onUpdate: (title: String, componentKeys: List<String>) -> Unit,
     modifier: Modifier = Modifier,
     preserveActiveOrder: Boolean = false,
+    extraMenuContent: @Composable ((hideMenu: () -> Unit) -> Unit)? = null,
 ) {
     var filterNonUniqueItems by remember { mutableStateOf(true) }
 
@@ -128,6 +129,7 @@ fun SelectAppsForDrawerFolder(
                 PositionalListOverflowMenu(
                     state = state,
                 ) { hideMenu ->
+                    extraMenuContent?.invoke(hideMenu)
                     DropdownMenuItem(
                         onClick = {
                             filterNonUniqueItems = !filterNonUniqueItems
