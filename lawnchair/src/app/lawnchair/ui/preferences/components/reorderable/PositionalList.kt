@@ -457,6 +457,7 @@ fun <T, K : Any> PositionalList(
                     isFirst = index == if (isActive) 0 else state.activeCount,
                     isLast = index == (if (isActive) state.activeCount else state.items.size) - 1,
                     isAnyDragging = reorderableState.isAnyItemDragging,
+                    onReorderFinished = state::commitReorder,
                     content = itemContent,
                     reorderEnabled = reorderEnabled,
                 )
@@ -510,6 +511,7 @@ private fun <T, K : Any> ReorderableCollectionItemScope.ReorderableItemContainer
     isLast: Boolean = true,
     isAnyDragging: Boolean = false,
     reorderEnabled: Boolean = true,
+    onReorderFinished: () -> Unit = {},
     content: @Composable ReorderableCollectionItemScope.(
         item: T,
         dragHandle: @Composable () -> Unit,
@@ -539,7 +541,7 @@ private fun <T, K : Any> ReorderableCollectionItemScope.ReorderableItemContainer
                             onDragStart = { isSelfDragging = true },
                             onDragStop = {
                                 isSelfDragging = false
-                                state.commitReorder()
+                                onReorderFinished()
                             },
                         )
                     }
