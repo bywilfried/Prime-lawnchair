@@ -47,7 +47,11 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         allFolderPackages = emptySet(),
         onUpdate = { _, componentKeys ->
             val updatedVisibleKeys = componentKeys.mapNotNull(ComponentKey::fromString).toSet()
-            val hiddenFolderKeys = if (hideFolderApps) tab.apps.intersect(folderAppKeys) else emptySet()
+            val hiddenFolderKeys = if (hideFolderApps) {
+                tab.apps.intersect(folderAppKeys).mapNotNull(ComponentKey::fromString).toSet()
+            } else {
+                emptySet()
+            }
             repository.setTabApps(
                 tabId,
                 updatedVisibleKeys + hiddenFolderKeys,
