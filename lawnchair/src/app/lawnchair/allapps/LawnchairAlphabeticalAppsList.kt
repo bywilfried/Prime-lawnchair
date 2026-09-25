@@ -1,6 +1,7 @@
 package app.lawnchair.allapps
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -36,7 +37,8 @@ class LawnchairAlphabeticalAppsList<T>(
     privateProfileManager: PrivateProfileManager?,
 ) : AlphabeticalAppsList<T>(context, appsStore, workProfileManager, privateProfileManager),
     OnIDPChangeListener,
-    DefaultLifecycleObserver
+    DefaultLifecycleObserver,
+    SharedPreferences.OnSharedPreferenceChangeListener
     where T : Context, T : ActivityContext {
 
     private var hiddenApps: Set<String> = setOf()
@@ -62,10 +64,18 @@ class LawnchairAlphabeticalAppsList<T>(
             Log.w(TAG, "Failed to initialize hidden apps", t)
         }
         observeFolders()
+        primeTabsRepository.registerConfigurationChangeListener(this)
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == PrimeDrawerTabsRepository.PREF_CONFIGURATION) {
+            onAppsUpdated()
+        }
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
         context.launcher.deviceProfile.inv.removeOnChangeListener(this)
+        primeTabsRepository.unregisterConfigurationChangeListener(this)
     }
 
     private fun observeFolders() {

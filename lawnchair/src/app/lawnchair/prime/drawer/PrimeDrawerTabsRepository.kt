@@ -1,6 +1,7 @@
 package app.lawnchair.prime.drawer
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.android.launcher3.LauncherPrefs
 import com.android.launcher3.util.ComponentKey
@@ -23,6 +24,14 @@ class PrimeDrawerTabsRepository(context: Context) {
 
     fun saveConfiguration(configuration: PrimeDrawerTabsConfiguration) {
         prefs.edit { putString(PREF_CONFIGURATION, encode(configuration.normalized())) }
+    }
+
+    fun registerConfigurationChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterConfigurationChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     fun createTab(title: String): PrimeDrawerTab {
@@ -287,7 +296,7 @@ class PrimeDrawerTabsRepository(context: Context) {
     companion object {
         const val ALL_TAB_ID = "system_all"
         const val UNCLASSIFIED_TAB_ID = "system_unclassified"
-        private const val PREF_CONFIGURATION = "prime_drawer_tabs_configuration"
+        const val PREF_CONFIGURATION = "prime_drawer_tabs_configuration"
         private const val CONFIG_VERSION = 1
     }
 }
