@@ -438,6 +438,10 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
     @SuppressLint("RtlHardcoded")
     public void arrangeChildren(List<View> list) {
         int itemCount = list.size();
+        // Prime can keep folders with zero or one item. Give those folders the same minimum
+        // grid footprint as a two-item folder so the opened folder and its title stay usable.
+        int layoutItemCount = mFolder.shouldKeepSingleItemFolder() && itemCount <= 1
+                ? 2 : itemCount;
         ArrayList<CellLayout> pages = new ArrayList<>();
         for (int i = 0; i < getChildCount(); i++) {
             CellLayout page = (CellLayout) getChildAt(i);
@@ -445,7 +449,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
             pages.add(page);
         }
         mOrganizer.setFolderInfo(mFolder.getInfo());
-        setupContentDimensions(itemCount);
+        setupContentDimensions(layoutItemCount);
 
         Iterator<CellLayout> pageItr = pages.iterator();
         CellLayout currentPage = null;
