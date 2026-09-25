@@ -59,6 +59,7 @@ import app.lawnchair.ui.preferences.components.layout.ExpandAndShrink
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.navigation.AppDrawerHiddenApps
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategories
 import app.lawnchair.ui.preferences.navigation.Predictions
 import com.android.launcher3.InvariantDeviceProfile
 import com.android.launcher3.R
@@ -91,6 +92,10 @@ fun AppDrawerPreferences(
             }
             ExpandAndShrink(visible = drawerTabsAdapter.state.value) {
                 PreferenceGroup(heading = stringResource(id = R.string.prime_tabs_settings)) {
+                    NavigationActionPreference(
+                        label = stringResource(id = R.string.prime_categories_manage),
+                        destination = PrimeDrawerCategories,
+                    )
                     ListPreference(
                         adapter = prefs.drawerTabsOpenMode.getAdapter(),
                         label = stringResource(id = R.string.prime_tabs_open_behavior),

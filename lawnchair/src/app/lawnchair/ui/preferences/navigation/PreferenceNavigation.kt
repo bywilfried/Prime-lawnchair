@@ -47,6 +47,7 @@ import app.lawnchair.ui.preferences.destinations.IconPickerPreference
 import app.lawnchair.ui.preferences.destinations.LauncherPopupPreference
 import app.lawnchair.ui.preferences.destinations.PickAppForGesture
 import app.lawnchair.ui.preferences.destinations.PredictionsPreferences
+import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoriesPreference
 import app.lawnchair.ui.preferences.destinations.PreferencesDashboard
 import app.lawnchair.ui.preferences.destinations.QuickstepPreferences
 import app.lawnchair.ui.preferences.destinations.SearchPreferences
@@ -157,6 +158,7 @@ fun PreferenceNavigation(
         composable<AppDrawer>(
             deepLinks = getDeepLink(AppDrawer),
         ) { AppDrawerPreferences() }
+        composable<PrimeDrawerCategories> { PrimeDrawerCategoriesPreference() }
         composable<AppDrawerHiddenApps>(
             deepLinks = getDeepLink(AppDrawerHiddenApps),
         ) { HiddenAppsPreferences() }

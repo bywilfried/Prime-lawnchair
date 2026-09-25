@@ -29,6 +29,8 @@
     <string name="prime_app_categories">Catégories</string>
     <string name="drawer_tabs">Onglets</string>
     <string name="prime_tabs_settings">Onglets</string>
+    <string name="prime_categories_manage">Gestion des catégories</string>
+    <string name="prime_category_hidden">Masqué</string>
     <string name="prime_tabs_open_behavior">À l’ouverture du tiroir</string>
     <string name="prime_tabs_open_first">Premier onglet</string>
     <string name="prime_tabs_open_last">Dernier onglet consulté</string>
