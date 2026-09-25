@@ -1,5 +1,10 @@
 package app.lawnchair.ui.preferences.destinations
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -45,5 +50,17 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
             if (folder.sortMode == "custom") repository.setFolderCustomOrder(tabId, folderId, componentKeys)
         },
         preserveActiveOrder = folder.sortMode == "custom",
+        extraMenuContent = { hideMenu ->
+            DropdownMenuItem(
+                text = { Text("Ordre alphabétique") },
+                trailingIcon = { if (folder.sortMode == "alphabetical") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setFolderSortMode(tabId, folderId, "alphabetical"); hideMenu() },
+            )
+            DropdownMenuItem(
+                text = { Text("Ordre personnalisé") },
+                trailingIcon = { if (folder.sortMode == "custom") Icon(Icons.Rounded.Check, null) },
+                onClick = { repository.setFolderSortMode(tabId, folderId, "custom"); hideMenu() },
+            )
+        },
     )
 }
