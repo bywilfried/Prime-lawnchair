@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import app.lawnchair.data.folder.FolderEntry
+import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.util.appsState
 import com.android.launcher3.util.ComponentKey
@@ -19,11 +20,19 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
     val repository = remember(context) { PrimeDrawerTabsRepository(context) }
     val apps = appsState().value
     val tab = repository.getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return
+    val hideFolderApps = PreferenceManager.getInstance(context).primeHideFolderApps.get()
+    val folderAppKeys = remember(tab.folders) {
+        tab.folders.flatMapTo(mutableSetOf()) { it.apps }
+    }
+    val visibleTabApps = remember(tab.apps, folderAppKeys, hideFolderApps) {
+        if (hideFolderApps) tab.apps - folderAppKeys else tab.apps
+    }
 
     val orderedKeys = if (tab.sortMode == "custom") {
-        tab.customOrder.filter(tab.apps::contains) + tab.apps.filterNot(tab.customOrder::contains)
+        tab.customOrder.filter(visibleTabApps::contains) +
+            visibleTabApps.filterNot(tab.customOrder::contains)
     } else {
-        tab.apps.sortedBy { key ->
+        visibleTabApps.sortedBy { key ->
             apps.firstOrNull { it.key.toString() == key }?.label?.lowercase() ?: key
         }
     }
@@ -37,12 +46,27 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         apps = apps,
         allFolderPackages = emptySet(),
         onUpdate = { _, componentKeys ->
+            val updatedVisibleKeys = componentKeys.mapNotNull(ComponentKey::fromString).toSet()
+            val hiddenFolderKeys = if (hideFolderApps) tab.apps.intersect(folderAppKeys) else emptySet()
             repository.setTabApps(
                 tabId,
-                componentKeys.mapNotNull(ComponentKey::fromString).toSet(),
+                updatedVisibleKeys + hiddenFolderKeys,
             )
             if (tab.sortMode == "custom") {
-                repository.setTabCustomOrder(tabId, componentKeys)
+                val visibleKeySet = componentKeys.toSet()
+                val updatedOrder = buildList {
+                    var visibleIndex = 0
+                    tab.customOrder.forEach { key ->
+                        if (key in visibleTabApps) {
+                            if (visibleIndex < componentKeys.size) add(componentKeys[visibleIndex++])
+                        } else {
+                            add(key)
+                        }
+                    }
+                    while (visibleIndex < componentKeys.size) add(componentKeys[visibleIndex++])
+                    componentKeys.filterNot(visibleKeySet::contains).forEach(::add)
+                }.distinct()
+                repository.setTabCustomOrder(tabId, updatedOrder)
             }
         },
         showDuplicateFilter = false,
