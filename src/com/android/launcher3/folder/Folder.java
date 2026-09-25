@@ -701,7 +701,11 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         reapplyItemInfo();
         // In case any children didn't come across during loading, clean up the folder accordingly
         mFolderIcon.post(() -> {
-            if (getItemCount() <= 1) {
+            // Prime drawer folders are virtual projections, not workspace folders. Keep them
+            // intact with zero or one item instead of converting the final item to Workspace.
+            if (getItemCount() <= 1
+                    && !(isInAppDrawer()
+                    && PreferenceManager.getInstance(getContext()).getDrawerTabsEnabled().get())) {
                 replaceFolderWithFinalItem();
             }
         });
