@@ -17,9 +17,9 @@ import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryApps
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders
 import com.android.launcher3.R
-import com.android.launcher3.util.ComponentKey
 
 @Composable
 fun PrimeDrawerCategoryPreference(tabId: String) {
@@ -30,7 +30,6 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
     val tab = configuration.tabs.firstOrNull { it.id == tabId } ?: return
     val apps by app.lawnchair.util.appsState()
     var renameOpen by remember { mutableStateOf(false) }
-    var appsOpen by remember { mutableStateOf(false) }
     val title = when (tab.id) {
         PrimeDrawerTabsRepository.ALL_TAB_ID -> stringResource(id = R.string.prime_tab_all)
         PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID -> stringResource(id = R.string.prime_tab_unclassified)
@@ -88,7 +87,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                         tab.apps.size,
                         tab.apps.size,
                     ),
-                    onClick = { appsOpen = true },
+                    onClick = { navController.navigate(PrimeDrawerCategoryApps(tab.id)) },
                 )
                 ClickablePreference(
                     label = stringResource(id = R.string.app_drawer_folder),
@@ -134,48 +133,4 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
         )
     }
 
-    if (appsOpen) {
-        val selected = remember(tab.apps, appsOpen) { mutableStateOf(tab.apps) }
-        val sortedApps = remember(apps) { apps.sortedBy { it.label.lowercase() } }
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = { appsOpen = false },
-            title = { Text(tab.title) },
-            text = {
-                androidx.compose.foundation.lazy.LazyColumn {
-                    items(sortedApps.size) { index ->
-                        val app = sortedApps[index]
-                        val key = app.key.toString()
-                        androidx.compose.material3.ListItem(
-                            headlineContent = { Text(app.label) },
-                            leadingContent = {
-                                androidx.compose.material3.Checkbox(
-                                    checked = key in selected.value,
-                                    onCheckedChange = { checked ->
-                                        selected.value = if (checked) selected.value + key else selected.value - key
-                                    },
-                                )
-                            },
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        repository.setTabApps(
-                            tab.id,
-                            selected.value.mapNotNull(ComponentKey::fromString).toSet(),
-                        )
-                        configuration = repository.getConfiguration()
-                        appsOpen = false
-                    },
-                ) { Text(stringResource(id = android.R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { appsOpen = false }) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            },
-        )
-    }
 }
