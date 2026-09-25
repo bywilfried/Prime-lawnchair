@@ -52,6 +52,7 @@ fun PrimeDrawerFolderAppsPreference(tabId: String, folderId: String) {
         showDuplicateFilter = false,
         showStandardMenuActions = false,
         preserveActiveOrder = folder.sortMode == "custom",
+        reorderEnabled = folder.sortMode == "custom",
         extraMenuContent = { hideMenu ->
             DropdownMenuItem(
                 text = { Text("Ordre alphabétique") },
