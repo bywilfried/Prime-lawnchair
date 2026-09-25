@@ -72,6 +72,7 @@ fun SelectAppsForDrawerFolder(
     allFolderPackages: Set<String>?,
     onUpdate: (title: String, componentKeys: List<String>) -> Unit,
     modifier: Modifier = Modifier,
+    preserveActiveOrder: Boolean = false,
 ) {
     var filterNonUniqueItems by remember { mutableStateOf(true) }
 
@@ -103,7 +104,11 @@ fun SelectAppsForDrawerFolder(
             items = positionalItems,
             activeCount = activeCount,
             onOrderChange = { newList, newCount ->
-                val sorted = PositionalListState.sortInactiveItems(newList, newCount) { it.label }
+                val sorted = if (preserveActiveOrder) {
+                    newList.take(newCount) + PositionalListState.sortInactiveItems(newList.drop(newCount), 0) { it.label }
+                } else {
+                    PositionalListState.sortInactiveItems(newList, newCount) { it.label }
+                }
                 val activeKeys = PositionalListState.getEnabledKeys(sorted, newCount)
                 onUpdate(folderEntry?.title.toString(), activeKeys)
             },
