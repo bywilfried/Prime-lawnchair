@@ -244,6 +244,52 @@ private fun ModifyCustomIconShapePreference(
     )
 }
 
+
+@Composable
+fun PrimeShapeSelection(
+    label: String,
+    selectedShape: IconShape,
+    onSelect: (IconShape?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val entries = remember { iconShapeEntries(context) }
+    PreferenceLayout(
+        label = label,
+        backArrowVisible = true,
+        modifier = modifier,
+    ) {
+        PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
+            PreferenceTemplate(
+                title = { Text("Utiliser la configuration générale") },
+                startWidget = {
+                    RadioButton(selected = false, onClick = null)
+                },
+                onClick = { onSelect(null) },
+            )
+        }
+        PreferenceGroup(heading = stringResource(id = R.string.presets)) {
+            entries.forEach { item ->
+                PreferenceTemplate(
+                    title = { Text(item.label()) },
+                    enabled = item.enabled,
+                    startWidget = {
+                        RadioButton(
+                            selected = item.value.toString() == selectedShape.toString(),
+                            onClick = null,
+                            enabled = item.enabled,
+                        )
+                    },
+                    endWidget = { IconShapePreview(iconShape = item.value) },
+                    onClick = if (item.enabled) {
+                        { onSelect(item.value) }
+                    } else null,
+                )
+            }
+        }
+    }
+}
+
 /**
  * Draws a preview of an [IconShape].
  */
