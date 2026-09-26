@@ -170,7 +170,7 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
     }
 
     private void init() {
-        mLongPressHelper = new CheckLongPressHelper(this);
+        mLongPressHelper = new CheckLongPressHelper(this, view -> mPrimeLongPressHelper.onLongClick(view));
         mPrimeLongPressHelper = new PrimeFolderLongPressHelper(this);
         mPreviewLayoutRule = new ClippedFolderIconLayoutRule();
         mPreviewItemManager = new PreviewItemManager(this);
@@ -224,7 +224,6 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
 
         icon.setTag(folderInfo);
         icon.setOnClickListener(activity.getItemOnClickListener());
-        icon.setOnLongClickListener(icon.mPrimeLongPressHelper::onLongClick);
         icon.mInfo = folderInfo;
         icon.mActivity = activity;
         icon.mDotRenderer = grid.mDotRendererWorkSpace;
