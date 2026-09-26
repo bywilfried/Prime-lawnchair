@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import app.lawnchair.preferences.PreferenceManager;
+import app.lawnchair.ui.preferences.PreferenceActivity;
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderAdvanced;
 
 /** Prime folder long-press menu and drag bridge for drawer and workspace folders. */
 public final class PrimeFolderLongPressHelper {
@@ -167,7 +169,16 @@ public final class PrimeFolderLongPressHelper {
             showAppsDialog();
             return true;
         }));
-        items.add(option(mIcon.getContext().getString(R.string.prime_tab_advanced) + "*", v -> true));
+        items.add(option(mIcon.getContext().getString(R.string.prime_tab_advanced) + "*", v -> {
+            PrimeFolderRef ref = getPrimeRef(mIcon.mInfo);
+            if (ref != null) {
+                mIcon.getContext().startActivity(
+                        PreferenceActivity.createIntent(
+                                mIcon.getContext(),
+                                new PrimeDrawerFolderAdvanced(ref.tabId, ref.folderId)));
+            }
+            return true;
+        }));
 
         int[] location = new int[2];
         mIcon.getLocationOnScreen(location);
