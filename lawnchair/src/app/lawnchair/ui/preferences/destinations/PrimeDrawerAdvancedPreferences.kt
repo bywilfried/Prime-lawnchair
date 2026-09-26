@@ -4,16 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.Surface
-import androidx.compose.ui.window.Dialog
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.unit.dp
-import app.lawnchair.ui.preferences.components.colorpreference.pickers.CustomColorPicker
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +17,10 @@ import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides
+import app.lawnchair.ui.preferences.LocalNavController
+import app.lawnchair.ui.preferences.components.colorpreference.ColorPreference
+import app.lawnchair.theme.color.ColorOption
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryColor
 import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.controls.SliderPreference
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
@@ -81,12 +76,8 @@ private fun PrimeCategoryDrawerOptions(
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
-        NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor) {
-            update(value.copy(tabColor = it))
-        }
-        NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor) {
-            update(value.copy(drawerBackgroundColor = it))
-        }
+        NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor, tabId, "tab")
+        NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor, tabId, "background")
         NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, 0f..1f, 0.1f) {
             update(value.copy(drawerBackgroundOpacity = it))
         }
@@ -203,67 +194,18 @@ private fun PrimeFolderOptions(
 }
 
 @Composable
-private fun NullableColorPreference(label: String, value: Int?, update: (Int?) -> Unit) {
-    val showPicker = remember { mutableStateOf(false) }
-    val draftColor = remember(value) { mutableStateOf(value ?: 0xFF2196F3.toInt()) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                draftColor.value = value ?: 0xFF2196F3.toInt()
-                showPicker.value = true
-            }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-    ) {
-        Text(
-            text = if (value == null) "$label\nPar défaut — toucher pour personnaliser"
-            else "$label\nPersonnalisé — toucher pour changer",
-            modifier = Modifier.weight(1f),
-        )
-        if (value != null) {
-            Text(text = "   ", modifier = Modifier.background(Color(value)))
-        }
-    }
-    if (value != null) {
-        ClickablePreference(label = "Utiliser la valeur par défaut", onClick = { update(null) })
-    }
-
-    if (showPicker.value) {
-        Dialog(onDismissRequest = { showPicker.value = false }) {
-            Surface {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 720.dp)
-                        .verticalScroll(rememberScrollState())
-                        .padding(vertical = 12.dp),
-                ) {
-                    Text(text = label, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                    CustomColorPicker(
-                        selectedColor = draftColor.value,
-                        onSelect = { draftColor.value = it },
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Button(onClick = { showPicker.value = false }) {
-                            Text("Annuler")
-                        }
-                        Button(onClick = {
-                            update(draftColor.value)
-                            showPicker.value = false
-                        }) {
-                            Text("Appliquer")
-                        }
-                    }
-                }
-            }
-        }
-    }
+private fun NullableColorPreference(
+    label: String,
+    value: Int?,
+    tabId: String,
+    colorKey: String,
+) {
+    val navController = LocalNavController.current
+    ColorPreference(
+        label = label,
+        selectedColor = value?.let { ColorOption.CustomColor(it) } ?: ColorOption.Default,
+        onClick = { navController.navigate(PrimeDrawerCategoryColor(tabId, colorKey, label)) },
+    )
 }
 
 @Composable
