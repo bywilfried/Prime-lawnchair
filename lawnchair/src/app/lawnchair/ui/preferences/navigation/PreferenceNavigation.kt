@@ -23,6 +23,9 @@ import app.lawnchair.ui.preferences.about.About
 import app.lawnchair.ui.preferences.about.acknowledgements.Acknowledgements
 import app.lawnchair.ui.preferences.components.colorpreference.ColorPreferenceModelList
 import app.lawnchair.ui.preferences.components.colorpreference.ColorSelection
+import app.lawnchair.ui.preferences.components.colorpreference.PrimeColorSelection
+import app.lawnchair.theme.color.ColorOption
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.ui.preferences.components.search.SearchProviderId
 import app.lawnchair.ui.preferences.components.search.SearchProviderPreferenceScreen
 import app.lawnchair.ui.preferences.destinations.AppDrawerFoldersPreference
@@ -189,6 +192,33 @@ fun PreferenceNavigation(
         composable<PrimeDrawerFolderAdvanced> { backStackEntry ->
             val route: PrimeDrawerFolderAdvanced = backStackEntry.toRoute()
             PrimeDrawerFolderAdvancedPreference(route.tabId, route.folderId)
+        }
+        composable<PrimeDrawerCategoryColor> { backStackEntry ->
+            val route: PrimeDrawerCategoryColor = backStackEntry.toRoute()
+            val context = LocalContext.current
+            val repository = PrimeDrawerTabsRepository(context)
+            val tab = repository.getTab(route.tabId)
+            val current = if (route.colorKey == "tab") {
+                tab?.visualOverrides?.tabColor
+            } else {
+                tab?.visualOverrides?.drawerBackgroundColor
+            }
+            PrimeColorSelection(
+                label = route.label,
+                appliedColor = current?.let { ColorOption.CustomColor(it) } ?: ColorOption.Default,
+                onApply = { option ->
+                    val resolved = when (option) {
+                        ColorOption.Default -> null
+                        else -> option.colorPreferenceEntry.lightColor(context)
+                    }
+                    val overrides = repository.getTab(route.tabId)?.visualOverrides ?: return@PrimeColorSelection
+                    repository.setTabVisualOverrides(
+                        route.tabId,
+                        if (route.colorKey == "tab") overrides.copy(tabColor = resolved)
+                        else overrides.copy(drawerBackgroundColor = resolved),
+                    )
+                },
+            )
         }
         composable<AppDrawerHiddenApps>(
             deepLinks = getDeepLink(AppDrawerHiddenApps),
