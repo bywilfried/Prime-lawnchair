@@ -91,7 +91,7 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
 
     @Thunk final ArrayMap<View, Runnable> mPendingAnimations = new ArrayMap<>();
 
-    private final FolderGridOrganizer mOrganizer;
+    private FolderGridOrganizer mOrganizer;
     private final ViewCache mViewCache;
 
     private int mAllocatedContentSize;
@@ -137,6 +137,19 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
 
     public void setFolder(Folder folder) {
         mFolder = folder;
+        if (folder.isInAppDrawer()) {
+            PrimeDrawerFolderVisualOverrides primeOverrides =
+                    PrimeFolderLongPressHelper.getVisualOverrides(getContext(), folder.getInfo());
+            if (primeOverrides != null
+                    && (primeOverrides.getColumns() != null || primeOverrides.getRows() != null)) {
+                DeviceProfile profile = folder.mActivityContext.getDeviceProfile();
+                int columns = primeOverrides.getColumns() != null
+                        ? primeOverrides.getColumns() : profile.numFolderColumns;
+                int rows = primeOverrides.getRows() != null
+                        ? primeOverrides.getRows() : profile.numFolderRows;
+                mOrganizer = new FolderGridOrganizer(columns, rows);
+            }
+        }
         mPageIndicator = folder.findViewById(R.id.folder_page_indicator);
         initParentViews(folder);
     }
