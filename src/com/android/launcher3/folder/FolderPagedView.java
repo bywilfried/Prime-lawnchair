@@ -68,7 +68,6 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides;
-import app.lawnchair.icons.shape.IconShape;
 import app.lawnchair.prime.drawer.PrimeFolderLongPressHelper;
 
 public class FolderPagedView extends PagedView<PageIndicatorDots> implements ClipPathView {
@@ -389,11 +388,6 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                     bubble.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
                             mFolder.mActivityContext.getDeviceProfile().folderChildTextSizePx
                                     * primeOverrides.getLabelSize());
-                }
-                if (primeOverrides.getChildIconShape() != null) {
-                    IconShape shape = IconShape.Companion.fromString(
-                            primeOverrides.getChildIconShape(), getContext());
-                    bubble.setPrimeIconShape(shape);
                 }
             }
         }
