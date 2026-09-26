@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -181,18 +184,22 @@ fun PrimeColorSelection(
     val context = LocalContext.current
     val mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context)
     val navController = LocalNavController.current
-    val selectedColor = remember { mutableIntStateOf(appliedColor.forCustomPicker(context)) }
+    var currentAppliedColor by remember(appliedColor) { mutableStateOf(appliedColor) }
+    val selectedColor = remember(appliedColor) { mutableIntStateOf(appliedColor.forCustomPicker(context)) }
     val selectedColorApplied = remember {
         derivedStateOf {
-            appliedColor is ColorOption.CustomColor && appliedColor.color == selectedColor.intValue
+            currentAppliedColor is ColorOption.CustomColor &&
+                (currentAppliedColor as ColorOption.CustomColor).color == selectedColor.intValue
         }
     }
     val defaultTabIndex = if (
-        dynamicEntries.any { it.value == appliedColor } || staticEntries.any { it.value == appliedColor }
+        dynamicEntries.any { it.value == currentAppliedColor } ||
+            staticEntries.any { it.value == currentAppliedColor }
     ) 0 else 1
     val pagerState = rememberPagerState(initialPage = defaultTabIndex, pageCount = { 2 })
     val onPresetClick = { option: ColorOption ->
         selectedColor.intValue = option.forCustomPicker(context)
+        currentAppliedColor = option
         onApply(option)
     }
 
@@ -208,7 +215,9 @@ fun PrimeColorSelection(
                 Button(
                     enabled = !selectedColorApplied.value,
                     onClick = {
-                        onApply(ColorOption.CustomColor(selectedColor.intValue))
+                        val option = ColorOption.CustomColor(selectedColor.intValue)
+                        currentAppliedColor = option
+                        onApply(option)
                         navController.popBackStack()
                     },
                     modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
@@ -254,7 +263,7 @@ fun PrimeColorSelection(
                         PresetsList(
                             dynamicEntries = dynamicEntries,
                             onPresetClick = onPresetClick,
-                            isPresetSelected = { it == appliedColor },
+                            isPresetSelected = { it == currentAppliedColor },
                         )
                         SwatchGrid(
                             modifier = Modifier.padding(top = 12.dp),
@@ -263,7 +272,7 @@ fun PrimeColorSelection(
                             ),
                             entries = staticEntries,
                             onSwatchClick = onPresetClick,
-                            isSwatchSelected = { it == appliedColor },
+                            isSwatchSelected = { it == currentAppliedColor },
                         )
                     }
                     1 -> CustomColorPicker(
