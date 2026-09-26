@@ -67,6 +67,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
+import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides;
+import app.lawnchair.prime.drawer.PrimeFolderLongPressHelper;
+
 public class FolderPagedView extends PagedView<PageIndicatorDots> implements ClipPathView {
 
     private static final String TAG = "FolderPagedView";
@@ -355,6 +358,22 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                     ((BubbleTextView) icon).applyFromApplicationInfo(appInfo);
                 } else {
                     ((BubbleTextView) icon).applyFromItemInfoWithIcon((ItemInfoWithIcon) item);
+                }
+            }
+        }
+
+        if (icon instanceof BubbleTextView && mFolder.isInAppDrawer()) {
+            PrimeDrawerFolderVisualOverrides primeOverrides =
+                    PrimeFolderLongPressHelper.getVisualOverrides(getContext(), mFolder.getInfo());
+            if (primeOverrides != null) {
+                BubbleTextView bubble = (BubbleTextView) icon;
+                if (primeOverrides.getShowLabels() != null && !primeOverrides.getShowLabels()) {
+                    bubble.setTextColor(android.graphics.Color.TRANSPARENT);
+                }
+                if (primeOverrides.getLabelSize() != null) {
+                    bubble.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
+                            mFolder.mActivityContext.getDeviceProfile().folderChildTextSizePx
+                                    * primeOverrides.getLabelSize());
                 }
             }
         }
