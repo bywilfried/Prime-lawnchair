@@ -3178,6 +3178,18 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
             mLauncher.getModelWriter().addOrMoveItemInDatabase(info, container, screenId,
                     mTargetCell[0], mTargetCell[1]);
 
+            // External folders (including Prime drawer folders) arrive as one FolderInfo object.
+            // Persist their children only after the folder has received its new workspace id;
+            // otherwise the icon is saved but its contents disappear and reload as empty folders.
+            if (info instanceof FolderInfo folderInfo) {
+                int rank = 0;
+                for (ItemInfo child : folderInfo.getContents()) {
+                    child.rank = rank++;
+                    mLauncher.getModelWriter().addOrMoveItemInDatabase(
+                            child, folderInfo.id, 0, child.cellX, child.cellY);
+                }
+            }
+
             addInScreen(view, container, screenId, mTargetCell[0], mTargetCell[1],
                     info.spanX, info.spanY);
             cellLayout.onDropChild(view);
