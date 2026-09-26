@@ -404,7 +404,7 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
         }
         if (overrides.getDrawerIconSize() != null) {
             int defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().allAppsIconSizePx;
-            icon.setIconSize(Math.round(defaultSize * overrides.getDrawerIconSize()));
+            icon.setPrimeIconSize(Math.round(defaultSize * overrides.getDrawerIconSize()));
         }
         if (overrides.getTwoLineLabels() != null) {
             icon.setSingleLine(!overrides.getTwoLineLabels());
