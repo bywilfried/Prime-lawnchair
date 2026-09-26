@@ -446,6 +446,9 @@ public class FloatingHeaderView extends LinearLayout implements
             ((BaseAllAppsAdapter<?>) rv.getAdapter()).setAppsPerRow(appsPerRow);
         }
         rv.getApps().setNumAppsPerRowAllApps(appsPerRow);
+        ActivityAllAppsContainerView<?> container =
+                (ActivityAllAppsContainerView<?>) getParent();
+        container.applyPrimeDrawerVisualOverrides();
         // Prime category visual overrides are external to AdapterItem content. Apps shared
         // between tabs can otherwise survive DiffUtil without being rebound and keep the
         // previous tab's styling.
