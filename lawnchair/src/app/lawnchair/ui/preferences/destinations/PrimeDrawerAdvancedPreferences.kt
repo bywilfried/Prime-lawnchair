@@ -184,7 +184,7 @@ private fun PrimeFolderOptions(
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
-        NullableShapePreference("Forme des icônes dans les dossiers" + NOT_IMPLEMENTED, value.childIconShape, tabId, "folderChildIcon", folderId)
+        NullableShapePreference("Forme des icônes dans les dossiers", value.childIconShape, tabId, "folderChildIcon", folderId)
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.shape, tabId, "folderShape", folderId)
