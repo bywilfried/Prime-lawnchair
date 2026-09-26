@@ -91,9 +91,11 @@ class PrimeDrawerTabsRepository(context: Context) {
         if (tabId == ALL_TAB_ID || tabId == UNCLASSIFIED_TAB_ID) return
         updateTab(tabId) { tab ->
             val keys = apps.mapTo(linkedSetOf(), ComponentKey::toString)
+            val members = keys + tab.folders.map { "folder:" + it.id }
             tab.copy(
                 apps = keys,
-                customOrder = tab.customOrder.filter(keys::contains) + keys.filterNot(tab.customOrder::contains),
+                customOrder = tab.customOrder.filter(members::contains) +
+                    members.filterNot(tab.customOrder::contains),
             )
         }
     }
