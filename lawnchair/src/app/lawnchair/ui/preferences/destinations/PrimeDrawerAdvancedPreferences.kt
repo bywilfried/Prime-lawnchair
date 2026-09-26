@@ -39,7 +39,7 @@ private fun PrimeCategoryDrawerPlaceholders() {
     val inherited = "Par défaut (Lawnchair)"
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
         AdvancedPlaceholder("Couleur de l’onglet de cette catégorie", inherited)
-        AdvancedPlaceholder(stringResource(id = R.string.background_color), inherited)
+        AdvancedPlaceholder("Couleur d’arrière-plan", inherited)
         AdvancedPlaceholder(stringResource(id = R.string.background_opacity), inherited)
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
