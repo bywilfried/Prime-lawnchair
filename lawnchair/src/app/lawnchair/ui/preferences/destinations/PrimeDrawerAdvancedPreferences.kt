@@ -3,6 +3,15 @@ package app.lawnchair.ui.preferences.destinations
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides
@@ -63,9 +72,15 @@ private fun PrimeCategoryDrawerOptions(
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
-        AdvancedPlaceholder("Couleur de l’onglet de cette catégorie", "Par défaut (Lawnchair)")
-        AdvancedPlaceholder("Couleur d’arrière-plan", "Par défaut (Lawnchair)")
-        AdvancedPlaceholder(stringResource(id = R.string.background_opacity), "Par défaut (Lawnchair)")
+        NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor) {
+            update(value.copy(tabColor = it))
+        }
+        NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor) {
+            update(value.copy(drawerBackgroundColor = it))
+        }
+        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, 0f..1f, 0.1f) {
+            update(value.copy(drawerBackgroundOpacity = it))
+        }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
         NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, 2..10) {
@@ -175,6 +190,33 @@ private fun PrimeFolderOptions(
         NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f) {
             update(value.copy(labelSize = it))
         }
+    }
+}
+
+@Composable
+private fun NullableColorPreference(label: String, value: Int?, update: (Int?) -> Unit) {
+    val palette = listOf(
+        0xFF000000.toInt(), 0xFFFFFFFF.toInt(), 0xFF607D8B.toInt(),
+        0xFF2196F3.toInt(), 0xFF3F51B5.toInt(), 0xFF673AB7.toInt(),
+        0xFFE91E63.toInt(), 0xFFF44336.toInt(), 0xFFFF9800.toInt(),
+        0xFF4CAF50.toInt(), 0xFF009688.toInt(),
+    )
+    if (value == null) {
+        ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") {
+            update(palette[3])
+        }
+    } else {
+        val index = palette.indexOf(value).let { if (it < 0) 0 else it }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { update(palette[(index + 1) % palette.size]) }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
+            Text(text = "$label — toucher pour changer", modifier = Modifier.weight(1f))
+            Text(text = "   ", modifier = Modifier.background(Color(value)))
+        }
+        ClickablePreference(label = "Utiliser la valeur par défaut", onClick = { update(null) })
     }
 }
 
