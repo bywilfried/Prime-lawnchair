@@ -163,7 +163,9 @@ public final class PrimeFolderLongPressHelper {
         if (activity == null) return;
         ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
         items.add(option(mIcon.getContext().getString(R.string.prime_edit_folder), v -> {
-            showFolderEditDialog();
+            PrimeFolderRef ref = getPrimeRef(mIcon.mInfo);
+            PrimeFolderEditSheet.show(mIcon, ref == null ? null : ref.tabId,
+                    ref == null ? null : ref.folderId);
             return true;
         }));
 
@@ -279,6 +281,10 @@ public final class PrimeFolderLongPressHelper {
                     dialog.dismiss();
                 }));
         dialog.show();
+    }
+
+    public static void showAppsDialogFromSheet(FolderIcon icon) {
+        new PrimeFolderLongPressHelper(icon).showAppsDialog();
     }
 
     private void showAppsDialog() {
