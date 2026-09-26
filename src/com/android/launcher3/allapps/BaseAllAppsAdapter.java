@@ -393,17 +393,15 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                 new PrimeDrawerTabsRepository(mActivityContext).getSelectedTabVisualOverrides();
         if (overrides == null) return;
 
-        if (overrides.getShowLabels() != null) {
-            icon.setTextColor(overrides.getShowLabels()
-                    ? Themes.getAttrColor(mActivityContext, android.R.attr.textColorPrimary)
-                    : android.graphics.Color.TRANSPARENT);
+        if (overrides.getShowLabels() != null && !overrides.getShowLabels()) {
+            icon.setTextColor(android.graphics.Color.TRANSPARENT);
         }
         if (overrides.getLabelSize() != null) {
-            float defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().allAppsIconTextSizePx;
+            float defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().getIconTextSizePx();
             icon.setTextSize(TypedValue.COMPLEX_UNIT_PX, defaultSize * overrides.getLabelSize());
         }
         if (overrides.getDrawerIconSize() != null) {
-            int defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().allAppsIconSizePx;
+            int defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().getIconSizePx();
             icon.setPrimeIconSize(Math.round(defaultSize * overrides.getDrawerIconSize()));
         }
         if (overrides.getTwoLineLabels() != null) {
