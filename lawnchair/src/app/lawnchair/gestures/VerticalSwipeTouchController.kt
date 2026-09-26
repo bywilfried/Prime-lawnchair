@@ -99,6 +99,10 @@ class VerticalSwipeTouchController(
     }
 
     override fun onDrag(displacement: PointF, motionEvent: MotionEvent): Boolean {
+        // A workspace item drag can start after this controller accepted ACTION_DOWN.
+        // Once DragController owns the gesture, never trigger the configured Home swipe action
+        // from the same pointer stream (notably Prime folder long-press -> drag).
+        if (launcher.dragController.isDragging) return true
         if (triggered) return true
         val velocity = computeVelocity(displacement.y - currentDisplacement, motionEvent.eventTime)
         if (velocity.absoluteValue > TRIGGER_VELOCITY) {
