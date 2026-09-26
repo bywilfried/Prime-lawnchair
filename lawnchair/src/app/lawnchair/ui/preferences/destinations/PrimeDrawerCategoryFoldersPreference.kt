@@ -4,7 +4,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +27,6 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import app.lawnchair.ui.preferences.components.reorderable.ReorderableDragHandle
 import app.lawnchair.ui.preferences.components.reorderable.ReorderablePreferenceGroup
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderApps
-import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderAdvanced
 import app.lawnchair.ui.util.bottomSheetHandler
 import com.android.launcher3.R
 
@@ -38,6 +39,7 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
     if (tab.isSystem) return
     var folders by remember { mutableStateOf(tab.folders) }
     val bottomSheetHandler = bottomSheetHandler
+    var deleteOpen by remember { mutableStateOf(false) }
 
     fun refresh() {
         folders = repository.getConfiguration().tabs.firstOrNull { it.id == tabId }?.folders.orEmpty()
@@ -93,10 +95,6 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                     bottomSheetHandler.hide()
                     navController.navigate(PrimeDrawerFolderApps(tabId, folder.id))
                 },
-                onAdvanced = {
-                    bottomSheetHandler.hide()
-                    navController.navigate(PrimeDrawerFolderAdvanced(tabId, folder.id))
-                },
                 interactionSource = interactionSource,
                 dragIndicator = {
                     ReorderableDragHandle(
@@ -115,7 +113,6 @@ private fun PrimeFolderItem(
     onRename: (String) -> Unit,
     onDelete: () -> Unit,
     onManageApps: () -> Unit,
-    onAdvanced: () -> Unit,
     interactionSource: MutableInteractionSource,
     dragIndicator: @Composable () -> Unit,
 ) {
@@ -134,7 +131,7 @@ private fun PrimeFolderItem(
         startWidget = dragIndicator,
         endWidget = {
             IconButton(
-                onClick = onDelete,
+                onClick = { deleteOpen = true },
                 shapes = IconButtonDefaults.shapes(),
             ) {
                 Icon(
@@ -152,11 +149,19 @@ private fun PrimeFolderItem(
                     itemCount = folder.apps.size,
                     onRename = { _, title -> onRename(title) },
                     onNavigate = { onManageApps() },
-                    onAdvanced = { onAdvanced() },
                     onDismiss = { bottomSheetHandler.hide() },
                 )
             }
         },
         interactionSource = interactionSource,
     )
+    if (deleteOpen) {
+        AlertDialog(
+            onDismissRequest = { deleteOpen = false },
+            title = { Text(stringResource(id = R.string.delete)) },
+            text = { Text("Supprimer ce dossier ?") },
+            confirmButton = { TextButton(onClick = { deleteOpen = false; onDelete() }) { Text(stringResource(id = R.string.delete)) } },
+            dismissButton = { TextButton(onClick = { deleteOpen = false }) { Text(stringResource(android.R.string.cancel)) } },
+        )
+    }
 }
