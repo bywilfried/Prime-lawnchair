@@ -105,7 +105,7 @@ private fun PrimeCategoryDrawerOptions(
         NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(labelSize = it))
         }
         NullableSwitch(stringResource(id = R.string.twoline_label), value.twoLineLabels) {
@@ -188,7 +188,7 @@ private fun PrimeFolderOptions(
         NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(labelSize = it))
         }
     }
