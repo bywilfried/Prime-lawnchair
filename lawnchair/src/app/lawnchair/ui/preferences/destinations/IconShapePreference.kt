@@ -60,6 +60,7 @@ import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.controls.ListPreferenceEntry
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
+import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import app.lawnchair.ui.preferences.components.layout.TwoTabPreferenceLayout
 import app.lawnchair.ui.preferences.navigation.GeneralCustomIconShapeCreator
