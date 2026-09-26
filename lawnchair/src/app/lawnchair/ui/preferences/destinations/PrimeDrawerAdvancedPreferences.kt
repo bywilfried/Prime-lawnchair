@@ -63,13 +63,17 @@ fun PrimeDrawerFolderAdvancedPreference(tabId: String, folderId: String) {
             ?: PrimeDrawerFolderVisualOverrides()
     }
     val overrides = remember(tabId, folderId) { mutableStateOf(initial) }
+    val inherited = remember(tabId, folderId, overrides.value) {
+        repository.getResolvedFolderVisualOverrides(tabId, folderId)
+            ?: PrimeDrawerFolderVisualOverrides()
+    }
     fun update(value: PrimeDrawerFolderVisualOverrides) {
         overrides.value = value
         repository.setFolderVisualOverrides(tabId, folderId, value)
     }
 
     PreferenceLayout(label = stringResource(id = R.string.folders_label), backArrowVisible = true) {
-        PrimeFolderOptions(overrides.value, ::update)
+        PrimeFolderOptions(overrides.value, inherited, ::update)
     }
 }
 
@@ -168,34 +172,37 @@ private fun PrimeCategoryFolderOptions(
 @Composable
 private fun PrimeFolderOptions(
     value: PrimeDrawerFolderVisualOverrides,
+    inherited: PrimeDrawerFolderVisualOverrides,
     update: (PrimeDrawerFolderVisualOverrides) -> Unit,
 ) {
+    val prefs = preferenceManager()
+    val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
         AdvancedPlaceholder("Forme des icônes dans les dossiers", "Par défaut (catégorie)")
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (catégorie)")
         AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (catégorie)")
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, inherited.previewOpacity ?: prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(previewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, inherited.backgroundOpacity ?: prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(backgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.columns, 2..5) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.columns, inherited.columns ?: prefs2.folderColumns.getAdapter().state.value, 2..5) {
             update(value.copy(columns = it))
         }
-        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.rows, 2..5) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.rows, inherited.rows ?: prefs.folderRows.getAdapter().state.value, 2..5) {
             update(value.copy(rows = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
-        NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels) {
+        NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels, inherited.showLabels ?: prefs2.showIconLabelsOnHomeScreenFolder.getAdapter().state.value) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, inherited.labelSize ?: prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(labelSize = it))
         }
     }
