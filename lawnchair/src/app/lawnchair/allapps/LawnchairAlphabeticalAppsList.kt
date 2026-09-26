@@ -12,6 +12,7 @@ import app.lawnchair.data.folder.model.FolderViewModel
 import app.lawnchair.launcher
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.prime.drawer.PrimeFolderLongPressHelper
 import app.lawnchair.preferences2.PreferenceManager2
 import app.lawnchair.util.categorizeAppsWithSystemAndGoogle
 import app.lawnchair.util.observeOnce
@@ -137,6 +138,11 @@ class LawnchairAlphabeticalAppsList<T>(
                         title = folder.title
                         resolvedApps.forEach { add(it) }
                     }
+                    PrimeFolderLongPressHelper.registerPrimeFolder(
+                        folderInfo,
+                        selectedTab.id,
+                        folder.id,
+                    )
                     Triple(folder, folderInfo, resolvedApps)
                 } else {
                     null
