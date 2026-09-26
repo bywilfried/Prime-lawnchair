@@ -303,6 +303,7 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                 icon.setSkipUserBadge(skipUserBadge);
                 icon.applyFromApplicationInfo(adapterItem.itemInfo);
                 applyPrimeTabIconOverrides(icon);
+                applyPrimeTabCellHeight(icon);
                 icon.setOnFocusChangeListener(mIconFocusListener);
                 if (privateProfileManager != null) {
                     // Set the alpha of the private space icon to 0 upon expanding the header so the
@@ -379,11 +380,25 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                         R.layout.all_apps_folder_icon, mActivityContext, container, folderInfo);
                 folderIcon.setOnLongClickListener(mOnIconLongClickListener);
                 container.addView(folderIcon);
+                applyPrimeTabCellHeight(container);
                 break;
             default:
                 if (mAdapterProvider.isViewSupported(holder.getItemViewType())) {
                     mAdapterProvider.onBindView(holder, position);
                 }
+        }
+    }
+
+    private void applyPrimeTabCellHeight(View view) {
+        int defaultHeight = mActivityContext.getDeviceProfile().getAllAppsProfile().getCellHeightPx();
+        PrimeDrawerVisualOverrides overrides =
+                new PrimeDrawerTabsRepository(mActivityContext).getSelectedTabVisualOverrides();
+        float factor = overrides != null && overrides.getDrawerRowHeight() != null
+                ? overrides.getDrawerRowHeight() : 1f;
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        if (layoutParams != null) {
+            layoutParams.height = Math.round(defaultHeight * factor);
+            view.setLayoutParams(layoutParams);
         }
     }
 
