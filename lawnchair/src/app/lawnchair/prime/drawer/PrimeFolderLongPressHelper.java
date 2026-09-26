@@ -110,12 +110,26 @@ public final class PrimeFolderLongPressHelper {
     private void startDrag() {
         Launcher launcher = Launcher.getLauncher(mIcon.getContext());
         if (!ItemLongClickListener.canStartDrag(launcher)) return;
-        if (mIcon.isInAppDrawer()) {
+        // Projected drawer folders have container == NO_ID, but once the same FolderInfo is
+        // dropped on Workspace that value is not a reliable way to choose the drag pipeline.
+        // The actual parent tells us whether this icon currently lives in All Apps.
+        if (isAttachedToAllApps()) {
             launcher.getWorkspace().beginDragShared(mIcon, launcher.getAppsView(), new DragOptions());
         } else {
             launcher.setWaitingForResult(null);
             ItemLongClickListener.beginDrag(mIcon, launcher, mIcon.mInfo, new DragOptions());
         }
+    }
+
+    private boolean isAttachedToAllApps() {
+        android.view.ViewParent parent = mIcon.getParent();
+        while (parent instanceof View) {
+            if (parent instanceof com.android.launcher3.allapps.AllAppsRecyclerView) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     private void showMenu() {
