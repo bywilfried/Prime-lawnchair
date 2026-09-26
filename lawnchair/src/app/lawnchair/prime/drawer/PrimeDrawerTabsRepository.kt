@@ -108,6 +108,10 @@ class PrimeDrawerTabsRepository(context: Context) {
         updateUserTab(tabId) { it.copy(folderPlacement = placement) }
     }
 
+    fun setTabVisualOverrides(tabId: String, overrides: PrimeDrawerVisualOverrides) {
+        updateUserTab(tabId) { it.copy(visualOverrides = overrides) }
+    }
+
     fun setTabCustomOrder(tabId: String, orderedKeys: List<String>) {
         updateUserTab(tabId) { tab ->
             val members = tab.apps + tab.folders.map { "folder:" + it.id }
@@ -181,6 +185,14 @@ class PrimeDrawerTabsRepository(context: Context) {
                     }
                 },
             )
+        }
+    }
+
+    fun setFolderVisualOverrides(tabId: String, folderId: String, overrides: PrimeDrawerFolderVisualOverrides) {
+        updateUserTab(tabId) { tab ->
+            tab.copy(folders = tab.folders.map { folder ->
+                if (folder.id == folderId) folder.copy(visualOverrides = overrides) else folder
+            })
         }
     }
 
@@ -266,6 +278,7 @@ class PrimeDrawerTabsRepository(context: Context) {
                     put("sortMode", tab.sortMode)
                     put("folderPlacement", tab.folderPlacement)
                     put("customOrder", JSONArray(tab.customOrder))
+                    put("visualOverrides", tab.visualOverrides.toJson())
                     put("folders", JSONArray().apply {
                         tab.folders.forEach { folder ->
                             put(JSONObject().apply {
@@ -274,6 +287,7 @@ class PrimeDrawerTabsRepository(context: Context) {
                                 put("apps", JSONArray(folder.apps.toList()))
                                 put("sortMode", folder.sortMode)
                                 put("customOrder", JSONArray(folder.customOrder))
+                                put("visualOverrides", folder.visualOverrides.toJson())
                             })
                         }
                     })
@@ -298,6 +312,7 @@ class PrimeDrawerTabsRepository(context: Context) {
                             sortMode = tab.optString("sortMode", "alphabetical"),
                             folderPlacement = tab.optString("folderPlacement", "start"),
                             customOrder = tab.optJSONArray("customOrder").toStringList(),
+                            visualOverrides = tab.optJSONObject("visualOverrides").toVisualOverrides(),
                             folders = tab.optJSONArray("folders").toFolders(),
                         ),
                     )
@@ -333,11 +348,63 @@ class PrimeDrawerTabsRepository(context: Context) {
                         apps = folder.optJSONArray("apps").toStringSet(),
                         sortMode = folder.optString("sortMode", "alphabetical"),
                         customOrder = folder.optJSONArray("customOrder").toStringList(),
+                        visualOverrides = folder.optJSONObject("visualOverrides").toFolderVisualOverrides(),
                     ),
                 )
             }
         }
     }
+
+    private fun PrimeDrawerVisualOverrides.toJson() = JSONObject().apply {
+        drawerIconSize?.let { put("drawerIconSize", it.toDouble()) }
+        showLabels?.let { put("showLabels", it) }
+        labelSize?.let { put("labelSize", it.toDouble()) }
+        twoLineLabels?.let { put("twoLineLabels", it) }
+        folderPreviewOpacity?.let { put("folderPreviewOpacity", it.toDouble()) }
+        folderBackgroundOpacity?.let { put("folderBackgroundOpacity", it.toDouble()) }
+        folderColumns?.let { put("folderColumns", it) }
+        folderRows?.let { put("folderRows", it) }
+        folderShowLabels?.let { put("folderShowLabels", it) }
+        folderLabelSize?.let { put("folderLabelSize", it.toDouble()) }
+    }
+
+    private fun JSONObject?.toVisualOverrides() = PrimeDrawerVisualOverrides(
+        drawerIconSize = this.optFloatOrNull("drawerIconSize"),
+        showLabels = this.optBooleanOrNull("showLabels"),
+        labelSize = this.optFloatOrNull("labelSize"),
+        twoLineLabels = this.optBooleanOrNull("twoLineLabels"),
+        folderPreviewOpacity = this.optFloatOrNull("folderPreviewOpacity"),
+        folderBackgroundOpacity = this.optFloatOrNull("folderBackgroundOpacity"),
+        folderColumns = this.optIntOrNull("folderColumns"),
+        folderRows = this.optIntOrNull("folderRows"),
+        folderShowLabels = this.optBooleanOrNull("folderShowLabels"),
+        folderLabelSize = this.optFloatOrNull("folderLabelSize"),
+    )
+
+    private fun PrimeDrawerFolderVisualOverrides.toJson() = JSONObject().apply {
+        previewOpacity?.let { put("previewOpacity", it.toDouble()) }
+        backgroundOpacity?.let { put("backgroundOpacity", it.toDouble()) }
+        columns?.let { put("columns", it) }
+        rows?.let { put("rows", it) }
+        showLabels?.let { put("showLabels", it) }
+        labelSize?.let { put("labelSize", it.toDouble()) }
+    }
+
+    private fun JSONObject?.toFolderVisualOverrides() = PrimeDrawerFolderVisualOverrides(
+        previewOpacity = this.optFloatOrNull("previewOpacity"),
+        backgroundOpacity = this.optFloatOrNull("backgroundOpacity"),
+        columns = this.optIntOrNull("columns"),
+        rows = this.optIntOrNull("rows"),
+        showLabels = this.optBooleanOrNull("showLabels"),
+        labelSize = this.optFloatOrNull("labelSize"),
+    )
+
+    private fun JSONObject?.optFloatOrNull(key: String): Float? =
+        if (this != null && has(key) && !isNull(key)) getDouble(key).toFloat() else null
+    private fun JSONObject?.optIntOrNull(key: String): Int? =
+        if (this != null && has(key) && !isNull(key)) getInt(key) else null
+    private fun JSONObject?.optBooleanOrNull(key: String): Boolean? =
+        if (this != null && has(key) && !isNull(key)) getBoolean(key) else null
 
     private fun nextFolderId(folders: List<PrimeDrawerFolder>): String {
         var suffix = 1
@@ -406,6 +473,7 @@ data class PrimeDrawerTab(
     val folderPlacement: String = "start",
     val customOrder: List<String> = emptyList(),
     val folders: List<PrimeDrawerFolder> = emptyList(),
+    val visualOverrides: PrimeDrawerVisualOverrides = PrimeDrawerVisualOverrides(),
 ) {
     val isSystem: Boolean
         get() = id == PrimeDrawerTabsRepository.ALL_TAB_ID ||
@@ -418,4 +486,27 @@ data class PrimeDrawerFolder(
     val apps: Set<String> = emptySet(),
     val sortMode: String = "alphabetical",
     val customOrder: List<String> = emptyList(),
+    val visualOverrides: PrimeDrawerFolderVisualOverrides = PrimeDrawerFolderVisualOverrides(),
+)
+
+data class PrimeDrawerVisualOverrides(
+    val drawerIconSize: Float? = null,
+    val showLabels: Boolean? = null,
+    val labelSize: Float? = null,
+    val twoLineLabels: Boolean? = null,
+    val folderPreviewOpacity: Float? = null,
+    val folderBackgroundOpacity: Float? = null,
+    val folderColumns: Int? = null,
+    val folderRows: Int? = null,
+    val folderShowLabels: Boolean? = null,
+    val folderLabelSize: Float? = null,
+)
+
+data class PrimeDrawerFolderVisualOverrides(
+    val previewOpacity: Float? = null,
+    val backgroundOpacity: Float? = null,
+    val columns: Int? = null,
+    val rows: Int? = null,
+    val showLabels: Boolean? = null,
+    val labelSize: Float? = null,
 )
