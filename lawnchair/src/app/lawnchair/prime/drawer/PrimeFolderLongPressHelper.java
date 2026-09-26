@@ -308,6 +308,13 @@ public final class PrimeFolderLongPressHelper {
         return Math.round(value * mIcon.getResources().getDisplayMetrics().density);
     }
 
+    public static PrimeDrawerFolderVisualOverrides getVisualOverrides(Context context, FolderInfo info) {
+        PrimeFolderRef ref = getPrimeRef(info);
+        if (ref == null) return null;
+        return new PrimeDrawerTabsRepository(context)
+                .getResolvedFolderVisualOverrides(ref.tabId, ref.folderId);
+    }
+
     private static PrimeFolderRef getPrimeRef(FolderInfo info) {
         synchronized (PRIME_FOLDERS) {
             return PRIME_FOLDERS.get(info);
