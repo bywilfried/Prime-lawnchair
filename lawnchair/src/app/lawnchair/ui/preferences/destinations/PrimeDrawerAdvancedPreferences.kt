@@ -17,6 +17,9 @@ import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
 import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides
+import app.lawnchair.preferences.getAdapter
+import app.lawnchair.preferences.preferenceManager
+import app.lawnchair.preferences2.preferenceManager2
 import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.colorpreference.ColorPreference
 import app.lawnchair.theme.color.ColorOption
@@ -76,47 +79,49 @@ private fun PrimeCategoryDrawerOptions(
     value: PrimeDrawerVisualOverrides,
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
+    val prefs = preferenceManager()
+    val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
         NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor, tabId, "tab")
         NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor, tabId, "background")
-        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, prefs.drawerOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(drawerBackgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, 3..10) {
+        NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, prefs2.drawerColumns.getAdapter().state.value, 3..10) {
             update(value.copy(drawerColumns = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, 0.3f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, prefs2.drawerCellHeightFactor.getAdapter().state.value, 0.3f..1.5f, 0.1f, true) {
             update(value.copy(drawerRowHeight = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, 0f..1.5f, 0.05f, true) {
+        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, prefs2.drawerLeftRightMarginFactor.getAdapter().state.value, 0f..1.5f, 0.05f, true) {
             update(value.copy(drawerHorizontalMargin = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, 1f..2f, 0.05f, true) {
+        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, prefs2.drawerPaddingTopFactor.getAdapter().state.value, 1f..2f, 0.05f, true) {
             update(value.copy(drawerTopPadding = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
         AdvancedPlaceholder("Forme des icônes", "Par défaut (Lawnchair)")
-        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, prefs2.drawerIconSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(drawerIconSize = it))
         }
-        NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels) {
+        NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels, prefs2.showIconLabelsInDrawer.getAdapter().state.value) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, prefs2.drawerIconLabelSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(labelSize = it))
         }
-        NullableSwitch(stringResource(id = R.string.twoline_label), value.twoLineLabels) {
+        NullableSwitch(stringResource(id = R.string.twoline_label), value.twoLineLabels, prefs2.twoLineAllApps.getAdapter().state.value) {
             update(value.copy(twoLineLabels = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.advanced)) {
-        NullableSwitch(stringResource(id = R.string.pref_all_apps_remember_position_title), value.rememberPosition) {
+        NullableSwitch(stringResource(id = R.string.pref_all_apps_remember_position_title), value.rememberPosition, prefs2.rememberPosition.getAdapter().state.value) {
             update(value.copy(rememberPosition = it))
         }
-        NullableSwitch(stringResource(id = R.string.pref_all_apps_show_scrollbar_title), value.showScrollbar) {
+        NullableSwitch(stringResource(id = R.string.pref_all_apps_show_scrollbar_title), value.showScrollbar, prefs2.showScrollbar.getAdapter().state.value) {
             update(value.copy(showScrollbar = it))
         }
     }
@@ -210,9 +215,9 @@ private fun NullableColorPreference(
 }
 
 @Composable
-private fun NullableSwitch(label: String, value: Boolean?, update: (Boolean?) -> Unit) {
+private fun NullableSwitch(label: String, value: Boolean?, inherited: Boolean, update: (Boolean?) -> Unit) {
     if (value == null) {
-        ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") { update(true) }
+        SwitchPreference(checked = inherited, onCheckedChange = { update(it) }, label = label, description = "Configuration générale")
     } else {
         SwitchPreference(
             checked = value,
@@ -228,15 +233,15 @@ private fun NullableSwitch(label: String, value: Boolean?, update: (Boolean?) ->
 private fun NullableFloatSlider(
     label: String,
     value: Float?,
+    inherited: Float,
     range: ClosedFloatingPointRange<Float>,
     step: Float,
     update: (Float?) -> Unit,
     showAsPercentage: Boolean = false,
 ) {
     if (value == null) {
-        ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") {
-            update((range.start + range.endInclusive) / 2f)
-        }
+        SliderPreference(label = label, value = inherited, onValueChangeFinished = { update(it) }, valueRange = range, step = step, showAsPercentage = showAsPercentage)
+        ClickablePreference(label = "Configuration générale", subtitle = "Toucher le réglage pour le personnaliser", onClick = {})
     } else {
         SliderPreference(label = label, value = value, onValueChangeFinished = { update(it) }, valueRange = range, step = step, showAsPercentage = showAsPercentage)
         ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
@@ -244,11 +249,10 @@ private fun NullableFloatSlider(
 }
 
 @Composable
-private fun NullableIntSlider(label: String, value: Int?, range: ClosedRange<Int>, update: (Int?) -> Unit) {
+private fun NullableIntSlider(label: String, value: Int?, inherited: Int, range: ClosedRange<Int>, update: (Int?) -> Unit) {
     if (value == null) {
-        ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") {
-            update((range.start + range.endInclusive) / 2)
-        }
+        SliderPreference(label = label, value = inherited.toFloat(), onValueChangeFinished = { update(it.toInt()) }, valueRange = range.start.toFloat()..range.endInclusive.toFloat(), step = 1f)
+        ClickablePreference(label = "Configuration générale", subtitle = "Toucher le réglage pour le personnaliser", onClick = {})
     } else {
         SliderPreference(label = label, value = value.toFloat(), onValueChangeFinished = { update(it.toInt()) }, valueRange = range.start.toFloat()..range.endInclusive.toFloat(), step = 1f)
         ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
