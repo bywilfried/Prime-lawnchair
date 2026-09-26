@@ -730,6 +730,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         mInfo = info;
         PrimeDrawerFolderVisualOverrides primeOverrides =
                 PrimeFolderLongPressHelper.getVisualOverrides(getContext(), info);
+        mContent.applyPrimeGridOverrides(primeOverrides);
         if (primeOverrides != null && primeOverrides.getBackgroundOpacity() != null) {
             mBackground.setAlpha(Math.round(255 * primeOverrides.getBackgroundOpacity()));
         }
