@@ -49,6 +49,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import app.lawnchair.preferences2.PreferenceManager2;
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository;
+import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides;
 
 public class FloatingHeaderView extends LinearLayout implements
         ValueAnimator.AnimatorUpdateListener, PluginListener<AllAppsRow>, Insettable,
@@ -435,6 +437,15 @@ public class FloatingHeaderView extends LinearLayout implements
         rv.setTranslationX(0f);
         rv.setAlpha(1f);
         rv.getApps().onAppsUpdated();
+        PrimeDrawerVisualOverrides primeOverrides =
+                new PrimeDrawerTabsRepository(getContext()).getSelectedTabVisualOverrides();
+        int appsPerRow = primeOverrides != null && primeOverrides.getDrawerColumns() != null
+                ? primeOverrides.getDrawerColumns()
+                : ActivityContext.lookupContext(getContext()).getDeviceProfile().numShownAllAppsColumns;
+        if (rv.getAdapter() instanceof BaseAllAppsAdapter) {
+            ((BaseAllAppsAdapter<?>) rv.getAdapter()).setAppsPerRow(appsPerRow);
+        }
+        rv.getApps().setNumAppsPerRowAllApps(appsPerRow);
         // Prime category visual overrides are external to AdapterItem content. Apps shared
         // between tabs can otherwise survive DiffUtil without being rebound and keep the
         // previous tab's styling.
