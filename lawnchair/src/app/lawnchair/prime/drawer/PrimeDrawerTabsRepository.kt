@@ -232,6 +232,13 @@ class PrimeDrawerTabsRepository(context: Context) {
         )
     }
 
+    fun getSelectedTabVisualOverrides(): PrimeDrawerVisualOverrides? {
+        val configuration = getConfiguration()
+        return configuration.tabs.firstOrNull { it.id == configuration.selectedTabId }
+            ?.takeUnless { it.isSystem }
+            ?.visualOverrides
+    }
+
     fun isAppInTab(componentKey: ComponentKey, tabId: String): Boolean {
         val configuration = getConfiguration()
         return when (tabId) {
