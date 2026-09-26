@@ -49,10 +49,12 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableWrapper;
 import android.icu.text.MessageFormat;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -117,6 +119,7 @@ import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.preferences2.PreferenceManager2;
 import app.lawnchair.util.LawnchairUtilsKt;
 import app.lawnchair.animation.PhysicsAnimator;
+import app.lawnchair.icons.shape.IconShape;
 
 /**
  * TextView that draws a bubble behind the text. We cannot use a LineBackgroundSpan
@@ -185,6 +188,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
     protected final ActivityContext mActivity;
     private FastBitmapDrawable mIcon;
+    private IconShape mPrimeIconShape;
     private DeviceProfile mDeviceProfile;
     private boolean mCenterVertically;
 
@@ -361,6 +365,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         cancelDotScaleAnim();
         mDotParams.scale = 0f;
         mForceHideDot = false;
+        mPrimeIconShape = null;
         setBackground(null);
 
         mLineIndicatorColor = Color.TRANSPARENT;
@@ -1501,7 +1506,11 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         }
         icon.setBounds(0, 0, mIconSize, mIconSize);
 
-        updateIcon(icon);
+        Drawable displayedIcon = mPrimeIconShape != null
+                ? new PrimeMaskedDrawable(icon, mPrimeIconShape)
+                : icon;
+        displayedIcon.setBounds(0, 0, mIconSize, mIconSize);
+        updateIcon(displayedIcon);
 
         // If the current icon is a placeholder color, animate its update.
         if (mIcon != null
@@ -1607,6 +1616,14 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     }
 
 
+
+    /** Prime: applies a view-local mask by wrapping only the compound drawable. */
+    public void setPrimeIconShape(@Nullable IconShape shape) {
+        mPrimeIconShape = shape;
+        applyCompoundDrawables(getIconOrTransparentColor());
+        invalidate();
+    }
+
     /** Prime: updates the rendered icon bounds for per-category drawer overrides. */
     public void setPrimeIconSize(int iconSize) {
         if (iconSize <= 0 || mIconSize == iconSize) return;
@@ -1641,6 +1658,40 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
             setCompoundDrawablesRelative(newIcon, null, null, null);
         } else {
             setCompoundDrawables(null, newIcon, null, null);
+        }
+    }
+
+
+    private static final class PrimeMaskedDrawable extends DrawableWrapper {
+        private final IconShape mShape;
+        private final Path mPath = new Path();
+
+        PrimeMaskedDrawable(Drawable drawable, IconShape shape) {
+            super(drawable);
+            mShape = shape;
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            Rect bounds = getBounds();
+            mPath.set(mShape.getMaskPath());
+            android.graphics.Matrix matrix = new android.graphics.Matrix();
+            matrix.setRectToRect(
+                    new RectF(0f, 0f, 100f, 100f),
+                    new RectF(bounds),
+                    android.graphics.Matrix.ScaleToFit.FILL);
+            mPath.transform(matrix);
+            int save = canvas.save();
+            canvas.clipPath(mPath);
+            super.draw(canvas);
+            canvas.restoreToCount(save);
+        }
+
+        @Override
+        protected void onBoundsChange(Rect bounds) {
+            super.onBoundsChange(bounds);
+            Drawable drawable = getDrawable();
+            if (drawable != null) drawable.setBounds(bounds);
         }
     }
 
