@@ -183,7 +183,10 @@ data class PrimeDrawerCategoryAdvanced(val tabId: String) : PreferenceRoute
 data class PrimeDrawerFolderAdvanced(val tabId: String, val folderId: String) : PreferenceRoute
 
 @Serializable
-data class PrimeDrawerCategoryColor(val tabId: String, val colorKey: String, val label: String) : PreferenceRoute
+data class PrimeDrawerCategoryColor(val tabId: String, val colorKey: String, val label: String, val folderId: String? = null) : PreferenceRoute
+
+@Serializable
+data class PrimeDrawerShape(val tabId: String, val shapeKey: String, val label: String, val folderId: String? = null) : PreferenceRoute
 
 @Serializable
 data object AppDrawerFolder : PreferenceRoute, PreferenceDeepLink {
