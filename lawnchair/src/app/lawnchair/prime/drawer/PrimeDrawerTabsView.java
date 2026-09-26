@@ -47,6 +47,8 @@ import app.lawnchair.ui.preferences.PreferenceActivity;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategory;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryAdvanced;
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategories;
+import app.lawnchair.ui.preferences.navigation.AppDrawer;
 
 /** Prime's independent horizontal drawer tab row. */
 public class PrimeDrawerTabsView extends HorizontalScrollView implements FloatingHeaderRow, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -391,44 +393,32 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         ActivityContext activityContext = ActivityContext.lookupContext(getContext());
         if (activityContext == null) return;
         ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
-        if (!tab.isSystem()) {
-            items.add(option(R.string.prime_tab_rename, v -> {
-                showRenameTabDialog(parent, tab);
-                return true;
-            }));
-        }
-        items.add(option(R.string.prime_tab_set_default, v -> {
-            mRepository.setDefaultTab(tab.getId());
+
+        items.add(option("Réorganiser", v -> {
+            getContext().startActivity(PreferenceActivity.createIntent(
+                    getContext(), PrimeDrawerCategories.INSTANCE));
             return true;
         }));
         if (!tab.isSystem()) {
-            items.add(option(getContext().getString(R.string.prime_tab_apps), v -> {
-                showAppsDialog(parent, tab);
+            items.add(option("Modifier la catégorie", v -> {
+                getContext().startActivity(PreferenceActivity.createIntent(
+                        getContext(), new PrimeDrawerCategory(tab.getId())));
                 return true;
             }));
             items.add(option(R.string.app_drawer_folder, v -> {
-                getContext().startActivity(
-                        PreferenceActivity.createIntent(
-                                getContext(),
-                                new PrimeDrawerCategoryFolders(tab.getId())));
+                getContext().startActivity(PreferenceActivity.createIntent(
+                        getContext(), new PrimeDrawerCategoryFolders(tab.getId())));
                 return true;
             }));
-            items.add(option(R.string.prime_tab_options, v -> {
-                getContext().startActivity(
-                        PreferenceActivity.createIntent(
-                                getContext(),
-                                new PrimeDrawerCategory(tab.getId())));
-                return true;
-            }));
-            items.add(option(getContext().getString(R.string.prime_tab_advanced), v -> {
-                getContext().startActivity(
-                        PreferenceActivity.createIntent(
-                                getContext(),
-                                new PrimeDrawerCategoryAdvanced(tab.getId())));
-                return true;
-            }));
-            items.add(option(R.string.prime_tab_delete, v -> {
-                showDeleteTabDialog(parent, tab);
+        }
+        items.add(option("Options du tiroir", v -> {
+            getContext().startActivity(PreferenceActivity.createIntent(
+                    getContext(), AppDrawer.INSTANCE));
+            return true;
+        }));
+        if (!tab.getId().equals(mRepository.getConfiguration().getDefaultTabId())) {
+            items.add(option(R.string.prime_tab_set_default, v -> {
+                mRepository.setDefaultTab(tab.getId());
                 return true;
             }));
         }
