@@ -136,7 +136,9 @@ class LawnchairAlphabeticalAppsList<T>(
                 if (resolvedApps.size > 1 || (resolvedApps.size < 2 && prefs.primeShowEmptyFolders.get())) {
                     val folderInfo = FolderInfo().apply {
                         title = folder.title
-                        resolvedApps.forEach { add(it) }
+                        // A projected Prime folder may be dragged to Workspace. Keep its transient
+                        // contents workspace-ready so Launcher never persists raw AppInfo children.
+                        resolvedApps.forEach { add(it.makeWorkspaceItem(context)) }
                     }
                     PrimeFolderLongPressHelper.registerPrimeFolder(
                         folderInfo,
