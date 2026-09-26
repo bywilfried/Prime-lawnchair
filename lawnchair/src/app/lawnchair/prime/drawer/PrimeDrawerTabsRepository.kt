@@ -382,6 +382,12 @@ class PrimeDrawerTabsRepository(context: Context) {
         showLabels?.let { put("showLabels", it) }
         labelSize?.let { put("labelSize", it.toDouble()) }
         twoLineLabels?.let { put("twoLineLabels", it) }
+        drawerColumns?.let { put("drawerColumns", it) }
+        drawerRowHeight?.let { put("drawerRowHeight", it.toDouble()) }
+        drawerHorizontalMargin?.let { put("drawerHorizontalMargin", it.toDouble()) }
+        drawerTopPadding?.let { put("drawerTopPadding", it.toDouble()) }
+        rememberPosition?.let { put("rememberPosition", it) }
+        showScrollbar?.let { put("showScrollbar", it) }
         folderPreviewOpacity?.let { put("folderPreviewOpacity", it.toDouble()) }
         folderBackgroundOpacity?.let { put("folderBackgroundOpacity", it.toDouble()) }
         folderColumns?.let { put("folderColumns", it) }
@@ -395,6 +401,12 @@ class PrimeDrawerTabsRepository(context: Context) {
         showLabels = this.optBooleanOrNull("showLabels"),
         labelSize = this.optFloatOrNull("labelSize"),
         twoLineLabels = this.optBooleanOrNull("twoLineLabels"),
+        drawerColumns = this.optIntOrNull("drawerColumns"),
+        drawerRowHeight = this.optFloatOrNull("drawerRowHeight"),
+        drawerHorizontalMargin = this.optFloatOrNull("drawerHorizontalMargin"),
+        drawerTopPadding = this.optFloatOrNull("drawerTopPadding"),
+        rememberPosition = this.optBooleanOrNull("rememberPosition"),
+        showScrollbar = this.optBooleanOrNull("showScrollbar"),
         folderPreviewOpacity = this.optFloatOrNull("folderPreviewOpacity"),
         folderBackgroundOpacity = this.optFloatOrNull("folderBackgroundOpacity"),
         folderColumns = this.optIntOrNull("folderColumns"),
@@ -516,6 +528,12 @@ data class PrimeDrawerVisualOverrides(
     val showLabels: Boolean? = null,
     val labelSize: Float? = null,
     val twoLineLabels: Boolean? = null,
+    val drawerColumns: Int? = null,
+    val drawerRowHeight: Float? = null,
+    val drawerHorizontalMargin: Float? = null,
+    val drawerTopPadding: Float? = null,
+    val rememberPosition: Boolean? = null,
+    val showScrollbar: Boolean? = null,
     val folderPreviewOpacity: Float? = null,
     val folderBackgroundOpacity: Float? = null,
     val folderColumns: Int? = null,
