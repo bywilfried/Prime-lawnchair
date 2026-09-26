@@ -22,6 +22,9 @@ class PrimeDrawerTabsRepository(context: Context) {
     fun getConfiguration(): PrimeDrawerTabsConfiguration =
         decode(prefs.getString(PREF_CONFIGURATION, null))
 
+    fun getTab(tabId: String): PrimeDrawerTab? =
+        getConfiguration().tabs.firstOrNull { it.id == tabId }
+
     fun saveConfiguration(configuration: PrimeDrawerTabsConfiguration) {
         prefs.edit { putString(PREF_CONFIGURATION, encode(configuration.normalized())) }
     }
