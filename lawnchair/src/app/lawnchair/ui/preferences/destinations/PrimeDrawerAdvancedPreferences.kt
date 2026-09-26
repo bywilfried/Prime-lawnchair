@@ -273,8 +273,8 @@ private fun NullableFloatSlider(
     inherited: Float,
     range: ClosedFloatingPointRange<Float>,
     step: Float,
-    update: (Float?) -> Unit,
     showAsPercentage: Boolean = false,
+    update: (Float?) -> Unit,
 ) {
     if (value == null) {
         SliderPreference(label = label, value = inherited, onValueChangeFinished = { update(it) }, valueRange = range, step = step, showAsPercentage = showAsPercentage)
