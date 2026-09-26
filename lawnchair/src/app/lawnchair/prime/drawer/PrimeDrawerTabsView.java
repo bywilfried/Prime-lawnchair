@@ -46,6 +46,7 @@ import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.ui.preferences.PreferenceActivity;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategory;
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders;
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryAdvanced;
 
 /** Prime's independent horizontal drawer tab row. */
 public class PrimeDrawerTabsView extends HorizontalScrollView implements FloatingHeaderRow, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -416,6 +417,13 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                         PreferenceActivity.createIntent(
                                 getContext(),
                                 new PrimeDrawerCategory(tab.getId())));
+                return true;
+            }));
+            items.add(option(getContext().getString(R.string.prime_tab_advanced) + "*", v -> {
+                getContext().startActivity(
+                        PreferenceActivity.createIntent(
+                                getContext(),
+                                new PrimeDrawerCategoryAdvanced(tab.getId())));
                 return true;
             }));
             items.add(option(R.string.prime_tab_delete, v -> {
