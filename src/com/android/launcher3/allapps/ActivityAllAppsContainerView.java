@@ -119,6 +119,8 @@ import app.lawnchair.allapps.LawnchairAlphabeticalAppsList;
 import app.lawnchair.font.FontManager;
 import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.preferences2.PreferenceManager2;
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository;
+import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides;
 import app.lawnchair.theme.color.tokens.ColorTokens;
 import app.lawnchair.util.LawnchairUtilsKt;
 import app.lawnchair.ui.StretchRecyclerViewContainer;
@@ -1312,6 +1314,33 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
     }
 
     /** Installs Prime horizontal tab swipes on the actual app-list area only. */
+    public void applyPrimeDrawerVisualOverrides() {
+        PrimeDrawerVisualOverrides overrides =
+                new PrimeDrawerTabsRepository(getContext()).getSelectedTabVisualOverrides();
+        Boolean scrollbarOverride = overrides != null ? overrides.getShowScrollbar() : null;
+        showFastScroller = scrollbarOverride != null
+                ? scrollbarOverride
+                : PreferenceCacheExtensionsKt.firstCached(pref2.getShowScrollbar());
+        if (!isSearching()) {
+            mFastScroller.setVisibility(showFastScroller ? VISIBLE : INVISIBLE);
+        }
+
+        DeviceProfile grid = mActivityContext.getDeviceProfile();
+        float marginFactor = overrides != null && overrides.getDrawerHorizontalMargin() != null
+                ? overrides.getDrawerHorizontalMargin() : 1f;
+        float topFactor = overrides != null && overrides.getDrawerTopPadding() != null
+                ? overrides.getDrawerTopPadding() : 1f;
+        int sideMargin = Math.round(grid.allAppsLeftRightMargin * marginFactor);
+        int topPadding = Math.round(grid.allAppsPadding.top * topFactor);
+        if (isSearchBarFloating() && !grid.shouldShowAllAppsOnSheet()) {
+            topPadding += getResources().getDimensionPixelSize(
+                    R.dimen.all_apps_additional_top_padding_floating_search);
+        }
+        if (!grid.isVerticalBarLayout() || FeatureFlags.enableResponsiveWorkspace()) {
+            setPadding(sideMargin, topPadding, sideMargin, 0);
+        }
+    }
+
     public void setPrimeDrawerSwipeListener(Consumer<Boolean> onSwipe) {
         if (mPrimeDrawerSwipeListener != null) {
             for (int type : new int[]{AdapterHolder.MAIN, AdapterHolder.WORK}) {
