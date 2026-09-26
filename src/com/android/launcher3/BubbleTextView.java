@@ -49,7 +49,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
@@ -118,7 +117,6 @@ import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.preferences2.PreferenceManager2;
 import app.lawnchair.util.LawnchairUtilsKt;
 import app.lawnchair.animation.PhysicsAnimator;
-import app.lawnchair.icons.shape.IconShape;
 
 /**
  * TextView that draws a bubble behind the text. We cannot use a LineBackgroundSpan
@@ -187,7 +185,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     private final MultiTranslateDelegate mTranslateDelegate = new MultiTranslateDelegate(this);
     protected final ActivityContext mActivity;
     private FastBitmapDrawable mIcon;
-    private IconShape mPrimeIconShape;
     private DeviceProfile mDeviceProfile;
     private boolean mCenterVertically;
 
@@ -364,7 +361,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         cancelDotScaleAnim();
         mDotParams.scale = 0f;
         mForceHideDot = false;
-        mPrimeIconShape = null;
         setBackground(null);
 
         mLineIndicatorColor = Color.TRANSPARENT;
@@ -1610,39 +1606,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         getIconBounds(mIconSize, bounds);
     }
 
-
-    /** Prime: clips only this view's icon drawable to a local shape without mutating icon caches. */
-    public void setPrimeIconShape(@Nullable IconShape shape) {
-        mPrimeIconShape = shape;
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (mPrimeIconShape == null || mIcon == null) {
-            super.onDraw(canvas);
-            return;
-        }
-        Drawable[] drawables = getCompoundDrawables();
-        Drawable top = drawables[1];
-        if (top == null) {
-            super.onDraw(canvas);
-            return;
-        }
-        Rect bounds = top.getBounds();
-        float left = (getWidth() - bounds.width()) / 2f;
-        float topOffset = getScrollY() + getCompoundPaddingTop();
-        Path path = mPrimeIconShape.getMaskPath();
-        RectF source = new RectF(0f, 0f, 100f, 100f);
-        RectF target = new RectF(left, topOffset, left + bounds.width(), topOffset + bounds.height());
-        android.graphics.Matrix matrix = new android.graphics.Matrix();
-        matrix.setRectToRect(source, target, android.graphics.Matrix.ScaleToFit.FILL);
-        path.transform(matrix);
-        int save = canvas.save();
-        canvas.clipPath(path);
-        super.onDraw(canvas);
-        canvas.restoreToCount(save);
-    }
 
     /** Prime: updates the rendered icon bounds for per-category drawer overrides. */
     public void setPrimeIconSize(int iconSize) {
