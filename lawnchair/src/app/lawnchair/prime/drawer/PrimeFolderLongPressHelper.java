@@ -47,6 +47,7 @@ public final class PrimeFolderLongPressHelper {
     private float mDownY;
     private boolean mLongPressActive;
     private OptionsPopupView<?> mPopup;
+    private boolean mDragStarted;
 
     public PrimeFolderLongPressHelper(FolderIcon icon) {
         mIcon = icon;
@@ -83,6 +84,7 @@ public final class PrimeFolderLongPressHelper {
                 mDownX = event.getX();
                 mDownY = event.getY();
                 mLongPressActive = false;
+                mDragStarted = false;
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mLongPressActive
@@ -93,15 +95,28 @@ public final class PrimeFolderLongPressHelper {
                         mPopup = null;
                     }
                     startDrag();
+                    mDragStarted = true;
+                } else if (mDragStarted) {
+                    Launcher launcher = Launcher.getLauncher(mIcon.getContext());
+                    launcher.getDragController().onControllerTouchEvent(event);
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 if (mLongPressActive) {
                     mLongPressActive = false;
                     showMenu();
+                } else if (mDragStarted) {
+                    Launcher launcher = Launcher.getLauncher(mIcon.getContext());
+                    launcher.getDragController().onControllerTouchEvent(event);
+                    mDragStarted = false;
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
+                if (mDragStarted) {
+                    Launcher launcher = Launcher.getLauncher(mIcon.getContext());
+                    launcher.getDragController().onControllerTouchEvent(event);
+                    mDragStarted = false;
+                }
                 mLongPressActive = false;
                 break;
         }
@@ -111,9 +126,6 @@ public final class PrimeFolderLongPressHelper {
         // The long-press phase blocks parent interception so workspace gestures cannot steal the
         // gesture. Once the drag starts, DragLayer must receive MOVE events again; otherwise the
         // DragView is created but remains frozen at its initial position.
-        if (mIcon.getParent() != null) {
-            mIcon.getParent().requestDisallowInterceptTouchEvent(false);
-        }
         Launcher launcher = Launcher.getLauncher(mIcon.getContext());
         if (!ItemLongClickListener.canStartDrag(launcher)) return;
         // Projected drawer folders have container == NO_ID, but once the same FolderInfo is
