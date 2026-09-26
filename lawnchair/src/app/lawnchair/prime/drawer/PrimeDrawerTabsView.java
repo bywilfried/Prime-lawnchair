@@ -420,7 +420,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                                 new PrimeDrawerCategory(tab.getId())));
                 return true;
             }));
-            items.add(option(getContext().getString(R.string.prime_tab_advanced) + "*", v -> {
+            items.add(option(getContext().getString(R.string.prime_tab_advanced), v -> {
                 getContext().startActivity(
                         PreferenceActivity.createIntent(
                                 getContext(),
