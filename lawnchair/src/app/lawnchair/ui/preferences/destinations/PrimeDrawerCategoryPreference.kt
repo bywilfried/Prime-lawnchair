@@ -81,6 +81,28 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
         }
     }
 
+    if (deleteOpen) {
+        AlertDialog(
+            onDismissRequest = { deleteOpen = false },
+            title = { Text(stringResource(id = R.string.delete)) },
+            text = { Text("Supprimer cette catégorie ?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleteOpen = false
+                        repository.deleteTab(tab.id)
+                        navController.popBackStack()
+                    },
+                ) { Text(stringResource(id = R.string.delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteOpen = false }) {
+                    Text(stringResource(id = android.R.string.cancel))
+                }
+            },
+        )
+    }
+
     if (renameOpen) {
         var newTitle by remember(tab.title) { mutableStateOf(tab.title) }
         AlertDialog(
