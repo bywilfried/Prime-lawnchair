@@ -378,6 +378,9 @@ class PrimeDrawerTabsRepository(context: Context) {
     }
 
     private fun PrimeDrawerVisualOverrides.toJson() = JSONObject().apply {
+        tabColor?.let { put("tabColor", it) }
+        drawerBackgroundColor?.let { put("drawerBackgroundColor", it) }
+        drawerBackgroundOpacity?.let { put("drawerBackgroundOpacity", it.toDouble()) }
         drawerIconSize?.let { put("drawerIconSize", it.toDouble()) }
         showLabels?.let { put("showLabels", it) }
         labelSize?.let { put("labelSize", it.toDouble()) }
@@ -397,6 +400,9 @@ class PrimeDrawerTabsRepository(context: Context) {
     }
 
     private fun JSONObject?.toVisualOverrides() = PrimeDrawerVisualOverrides(
+        tabColor = this.optIntOrNull("tabColor"),
+        drawerBackgroundColor = this.optIntOrNull("drawerBackgroundColor"),
+        drawerBackgroundOpacity = this.optFloatOrNull("drawerBackgroundOpacity"),
         drawerIconSize = this.optFloatOrNull("drawerIconSize"),
         showLabels = this.optBooleanOrNull("showLabels"),
         labelSize = this.optFloatOrNull("labelSize"),
@@ -524,6 +530,9 @@ data class PrimeDrawerFolder(
 )
 
 data class PrimeDrawerVisualOverrides(
+    val tabColor: Int? = null,
+    val drawerBackgroundColor: Int? = null,
+    val drawerBackgroundOpacity: Float? = null,
     val drawerIconSize: Float? = null,
     val showLabels: Boolean? = null,
     val labelSize: Float? = null,
