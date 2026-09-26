@@ -72,8 +72,12 @@ public final class PrimeFolderLongPressHelper {
         mLongPressActive = true;
         mMenuShownDuringLongPress = !isAttachedToAllApps();
         if (mMenuShownDuringLongPress) {
-            // Workspace folders should behave like workspace app icons: show their actions as
-            // soon as the long press is recognized, while the finger is still down.
+            // Match workspace app icons: once long press is recognized, keep Workspace gestures
+            // from stealing the still-active pointer while the action menu is visible. Movement
+            // past slop closes the menu and startDrag() hands ownership back to DragLayer.
+            if (mIcon.getParent() != null) {
+                mIcon.getParent().requestDisallowInterceptTouchEvent(true);
+            }
             showMenu();
         } else {
             // Drawer folders still need to retain the gesture until we know whether this is a
