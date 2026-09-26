@@ -214,11 +214,14 @@ fun PreferenceNavigation(
                 "folderShape" -> prefs2.folderShape.firstCached()
                 else -> prefs2.iconShape.firstCached()
             }
-            val selected = stored?.let { IconShape.fromString(it, context) } ?: inherited
+            var selected by remember(route.tabId, route.folderId, route.shapeKey) {
+                mutableStateOf(stored?.let { IconShape.fromString(it, context) } ?: inherited)
+            }
             PrimeShapeSelection(
                 label = route.label,
                 selectedShape = selected,
                 onSelect = { shape ->
+                    selected = shape ?: inherited
                     val currentTab = repository.getTab(route.tabId) ?: return@PrimeShapeSelection
                     if (route.folderId == null) {
                         val o = currentTab.visualOverrides
