@@ -169,6 +169,113 @@ fun ColorSelection(
     }
 }
 
+@Composable
+fun PrimeColorSelection(
+    label: String,
+    appliedColor: ColorOption,
+    onApply: (ColorOption) -> Unit,
+    modifier: Modifier = Modifier,
+    dynamicEntries: List<ColorPreferenceEntry<ColorOption>> = dynamicColorsWithDefault,
+    staticEntries: List<ColorPreferenceEntry<ColorOption>> = staticColors,
+) {
+    val context = LocalContext.current
+    val mMSDLPlayerWrapper = MSDLPlayerWrapper.INSTANCE.get(context)
+    val navController = LocalNavController.current
+    val selectedColor = remember { mutableIntStateOf(appliedColor.forCustomPicker(context)) }
+    val selectedColorApplied = remember {
+        derivedStateOf {
+            appliedColor is ColorOption.CustomColor && appliedColor.color == selectedColor.intValue
+        }
+    }
+    val defaultTabIndex = if (
+        dynamicEntries.any { it.value == appliedColor } || staticEntries.any { it.value == appliedColor }
+    ) 0 else 1
+    val pagerState = rememberPagerState(initialPage = defaultTabIndex, pageCount = { 2 })
+    val onPresetClick = { option: ColorOption ->
+        selectedColor.intValue = option.forCustomPicker(context)
+        onApply(option)
+    }
+
+    PreferenceLayout(
+        label = label,
+        modifier = modifier,
+        bottomBar = {
+            if (pagerState.currentPage == 0) {
+                BottomSpacer()
+                return@PreferenceLayout
+            }
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
+                Button(
+                    enabled = !selectedColorApplied.value,
+                    onClick = {
+                        onApply(ColorOption.CustomColor(selectedColor.intValue))
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+                    shapes = ButtonDefaults.shapes(),
+                ) { Text(text = stringResource(id = R.string.action_apply)) }
+                BottomSpacer()
+            }
+        },
+    ) {
+        val scope = rememberCoroutineScope()
+        val scrollToPage = { page: Int -> scope.launch { pagerState.animateScrollToPage(page) } }
+        Column {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Chip(
+                    label = stringResource(id = R.string.presets),
+                    onClick = {
+                        mMSDLPlayerWrapper.playToken(MSDLToken.TAP_LOW_EMPHASIS)
+                        scrollToPage(0)
+                    },
+                    currentOffset = pagerState.currentPage + pagerState.currentPageOffsetFraction,
+                    page = 0,
+                )
+                Chip(
+                    label = stringResource(id = R.string.custom),
+                    onClick = {
+                        mMSDLPlayerWrapper.playToken(MSDLToken.TAP_LOW_EMPHASIS)
+                        scrollToPage(1)
+                    },
+                    currentOffset = pagerState.currentPage + pagerState.currentPageOffsetFraction,
+                    page = 1,
+                )
+            }
+            HorizontalPager(
+                state = pagerState,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.animateContentSize(),
+            ) { page ->
+                when (page) {
+                    0 -> Column {
+                        PresetsList(
+                            dynamicEntries = dynamicEntries,
+                            onPresetClick = onPresetClick,
+                            isPresetSelected = { it == appliedColor },
+                        )
+                        SwatchGrid(
+                            modifier = Modifier.padding(top = 12.dp),
+                            contentModifier = Modifier.padding(
+                                start = 16.dp, top = 20.dp, end = 16.dp, bottom = 16.dp,
+                            ),
+                            entries = staticEntries,
+                            onSwatchClick = onPresetClick,
+                            isSwatchSelected = { it == appliedColor },
+                        )
+                    }
+                    1 -> CustomColorPicker(
+                        selectedColor = selectedColor.intValue,
+                        onSelect = { selectedColor.intValue = it },
+                    )
+                }
+            }
+        }
+    }
+}
+
 private fun ColorOption.forCustomPicker(context: Context): Int {
     val color = colorPreferenceEntry.lightColor(context)
     if (color == 0) {
