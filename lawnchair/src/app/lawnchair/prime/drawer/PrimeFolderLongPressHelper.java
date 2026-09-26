@@ -47,6 +47,7 @@ public final class PrimeFolderLongPressHelper {
     private float mDownY;
     private boolean mLongPressActive;
     private OptionsPopupView<?> mPopup;
+    private boolean mMenuShownDuringLongPress;
 
     public PrimeFolderLongPressHelper(FolderIcon icon) {
         mIcon = icon;
@@ -69,10 +70,16 @@ public final class PrimeFolderLongPressHelper {
         if (!shouldHandle(mIcon)) return false;
         mIcon.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         mLongPressActive = true;
-        // Keep the gesture owned by the folder icon after the long press. Showing the popup here
-        // would move touch handling to DragLayer, allowing workspace swipes/notification gestures
-        // to steal the MOVE event before we can turn it into a drag.
-        mIcon.getParent().requestDisallowInterceptTouchEvent(true);
+        mMenuShownDuringLongPress = !isAttachedToAllApps();
+        if (mMenuShownDuringLongPress) {
+            // Workspace folders should behave like workspace app icons: show their actions as
+            // soon as the long press is recognized, while the finger is still down.
+            showMenu();
+        } else {
+            // Drawer folders still need to retain the gesture until we know whether this is a
+            // menu press or a drag-to-workspace gesture.
+            mIcon.getParent().requestDisallowInterceptTouchEvent(true);
+        }
         return true;
     }
 
@@ -83,6 +90,7 @@ public final class PrimeFolderLongPressHelper {
                 mDownX = event.getX();
                 mDownY = event.getY();
                 mLongPressActive = false;
+                mMenuShownDuringLongPress = false;
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mLongPressActive
@@ -92,17 +100,22 @@ public final class PrimeFolderLongPressHelper {
                         mPopup.close(false);
                         mPopup = null;
                     }
+                    mMenuShownDuringLongPress = false;
                     startDrag();
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 if (mLongPressActive) {
                     mLongPressActive = false;
-                    showMenu();
+                    if (!mMenuShownDuringLongPress) {
+                        showMenu();
+                    }
+                    mMenuShownDuringLongPress = false;
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 mLongPressActive = false;
+                mMenuShownDuringLongPress = false;
                 break;
         }
     }
