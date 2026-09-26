@@ -19,7 +19,6 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryApps
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders
-import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryAdvanced
 import com.android.launcher3.R
 
 @Composable
@@ -31,6 +30,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
     val tab = configuration.tabs.firstOrNull { it.id == tabId } ?: return
     val apps by app.lawnchair.util.appsState()
     var renameOpen by remember { mutableStateOf(false) }
+    var deleteOpen by remember { mutableStateOf(false) }
     val title = when (tab.id) {
         PrimeDrawerTabsRepository.ALL_TAB_ID -> stringResource(id = R.string.prime_tab_all)
         PrimeDrawerTabsRepository.UNCLASSIFIED_TAB_ID -> stringResource(id = R.string.prime_tab_unclassified)
@@ -74,8 +74,8 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                     onClick = { navController.navigate(PrimeDrawerCategoryFolders(tab.id)) },
                 )
                 ClickablePreference(
-                    label = stringResource(id = R.string.prime_tab_advanced) + "*",
-                    onClick = { navController.navigate(PrimeDrawerCategoryAdvanced(tab.id)) },
+                    label = stringResource(id = R.string.delete),
+                    onClick = { deleteOpen = true },
                 )
             }
         }
