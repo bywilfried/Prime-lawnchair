@@ -45,7 +45,7 @@ fun PrimeDrawerCategoryAdvancedPreference(tabId: String) {
     }
 
     PreferenceLayout(label = "Options avancées", backArrowVisible = true) {
-        PrimeCategoryDrawerOptions(overrides.value, ::update)
+        PrimeCategoryDrawerOptions(tabId, overrides.value, ::update)
         PrimeCategoryFolderOptions(overrides.value, ::update)
     }
 }
@@ -72,39 +72,40 @@ fun PrimeDrawerFolderAdvancedPreference(tabId: String, folderId: String) {
 
 @Composable
 private fun PrimeCategoryDrawerOptions(
+    tabId: String,
     value: PrimeDrawerVisualOverrides,
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
         NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor, tabId, "tab")
         NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor, tabId, "background")
-        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, 0f..1f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, 0f..1f, 0.1f, true) {
             update(value.copy(drawerBackgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, 2..10) {
+        NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, 3..10) {
             update(value.copy(drawerColumns = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, 0.5f..1.5f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, 0.3f..1.5f, 0.1f, true) {
             update(value.copy(drawerRowHeight = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, 0f..2f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, 0f..1.5f, 0.05f, true) {
             update(value.copy(drawerHorizontalMargin = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, 0f..2f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, 1f..2f, 0.05f, true) {
             update(value.copy(drawerTopPadding = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
         AdvancedPlaceholder("Forme des icônes", "Par défaut (Lawnchair)")
-        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, 0.5f..1.5f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(drawerIconSize = it))
         }
         NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, 0.5f..1.5f, 0.1f, true, true) {
             update(value.copy(labelSize = it))
         }
         NullableSwitch(stringResource(id = R.string.twoline_label), value.twoLineLabels) {
@@ -132,18 +133,18 @@ private fun PrimeCategoryFolderOptions(
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (Lawnchair)")
         AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (Lawnchair)")
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, 0f..1f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, 0f..1f, 0.1f, true) {
             update(value.copy(folderPreviewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, 0f..1f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, 0f..1f, 0.1f, true) {
             update(value.copy(folderBackgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.folderColumns, 2..6) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.folderColumns, 2..5) {
             update(value.copy(folderColumns = it))
         }
-        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.folderRows, 2..6) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.folderRows, 2..5) {
             update(value.copy(folderRows = it))
         }
     }
@@ -151,7 +152,7 @@ private fun PrimeCategoryFolderOptions(
         NullableSwitch(stringResource(id = R.string.show_labels), value.folderShowLabels) {
             update(value.copy(folderShowLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, 0.5f..1.5f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(folderLabelSize = it))
         }
     }
@@ -168,18 +169,18 @@ private fun PrimeFolderOptions(
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (catégorie)")
         AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (catégorie)")
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, 0f..1f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, 0f..1f, 0.1f, true) {
             update(value.copy(previewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, 0f..1f, 0.1f) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, 0f..1f, 0.1f, true) {
             update(value.copy(backgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.columns, 2..6) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.columns, 2..5) {
             update(value.copy(columns = it))
         }
-        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.rows, 2..6) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.rows, 2..5) {
             update(value.copy(rows = it))
         }
     }
@@ -217,8 +218,10 @@ private fun NullableSwitch(label: String, value: Boolean?, update: (Boolean?) ->
             checked = value,
             onCheckedChange = { update(it) },
             label = label,
-            description = "Personnalisé — toucher le libellé pour revenir à Par défaut",
-            onClick = { update(null) },
+            description = null,
+        )
+        ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
+        return
         )
     }
 }
@@ -230,14 +233,15 @@ private fun NullableFloatSlider(
     range: ClosedFloatingPointRange<Float>,
     step: Float,
     update: (Float?) -> Unit,
+    showAsPercentage: Boolean = false,
 ) {
     if (value == null) {
         ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") {
             update((range.start + range.endInclusive) / 2f)
         }
     } else {
-        SliderPreference(label = label, value = value, onValueChangeFinished = { update(it) }, valueRange = range, step = step)
-        ClickablePreference(label = "Utiliser la valeur par défaut", onClick = { update(null) })
+        SliderPreference(label = label, value = value, onValueChangeFinished = { update(it) }, valueRange = range, step = step, showAsPercentage = showAsPercentage)
+        ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
     }
 }
 
@@ -249,7 +253,7 @@ private fun NullableIntSlider(label: String, value: Int?, range: ClosedRange<Int
         }
     } else {
         SliderPreference(label = label, value = value.toFloat(), onValueChangeFinished = { update(it.toInt()) }, valueRange = range.start.toFloat()..range.endInclusive.toFloat(), step = 1f)
-        ClickablePreference(label = "Utiliser la valeur par défaut", onClick = { update(null) })
+        ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
     }
 }
 
@@ -260,6 +264,7 @@ private fun SliderPreference(
     onValueChangeFinished: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
     step: Float,
+    showAsPercentage: Boolean = false,
 ) {
     val state = remember(value) { mutableStateOf(value) }
     app.lawnchair.ui.preferences.components.controls.SliderPreference(
@@ -270,7 +275,7 @@ private fun SliderPreference(
         },
         valueRange = valueRange,
         step = step,
-        showAsPercentage = valueRange.endInclusive <= 1.5f,
+        showAsPercentage = showAsPercentage,
     )
 }
 
