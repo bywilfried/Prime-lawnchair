@@ -435,6 +435,12 @@ public class FloatingHeaderView extends LinearLayout implements
         rv.setTranslationX(0f);
         rv.setAlpha(1f);
         rv.getApps().onAppsUpdated();
+        // Prime category visual overrides are external to AdapterItem content. Apps shared
+        // between tabs can otherwise survive DiffUtil without being rebound and keep the
+        // previous tab's styling.
+        if (rv.getAdapter() != null) {
+            rv.getAdapter().notifyDataSetChanged();
+        }
         rv.scrollToTop();
 
         if (direction == 0 || rv.getWidth() == 0) return;
