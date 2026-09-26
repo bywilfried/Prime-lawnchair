@@ -108,6 +108,12 @@ public final class PrimeFolderLongPressHelper {
     }
 
     private void startDrag() {
+        // The long-press phase blocks parent interception so workspace gestures cannot steal the
+        // gesture. Once the drag starts, DragLayer must receive MOVE events again; otherwise the
+        // DragView is created but remains frozen at its initial position.
+        if (mIcon.getParent() != null) {
+            mIcon.getParent().requestDisallowInterceptTouchEvent(false);
+        }
         Launcher launcher = Launcher.getLauncher(mIcon.getContext());
         if (!ItemLongClickListener.canStartDrag(launcher)) return;
         // Projected drawer folders have container == NO_ID, but once the same FolderInfo is
