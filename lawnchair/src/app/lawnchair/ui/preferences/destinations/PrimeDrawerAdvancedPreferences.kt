@@ -24,6 +24,9 @@ import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.components.colorpreference.ColorPreference
 import app.lawnchair.theme.color.ColorOption
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryColor
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerShape
+import app.lawnchair.icons.shape.IconShape
+import app.lawnchair.ui.preferences.destinations.IconShapePreview
 import app.lawnchair.ui.preferences.components.controls.ClickablePreference
 import app.lawnchair.ui.preferences.components.controls.SliderPreference
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
@@ -73,7 +76,7 @@ fun PrimeDrawerFolderAdvancedPreference(tabId: String, folderId: String) {
     }
 
     PreferenceLayout(label = stringResource(id = R.string.folders_label), backArrowVisible = true) {
-        PrimeFolderOptions(overrides.value, inherited, ::update)
+        PrimeFolderOptions(tabId, folderId, overrides.value, inherited, ::update)
     }
 }
 
@@ -107,7 +110,7 @@ private fun PrimeCategoryDrawerOptions(
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
-        AdvancedPlaceholder("Forme des icônes", "Par défaut (Lawnchair)")
+        NullableShapePreference("Forme des icônes", value.drawerIconShape, tabId, "drawerIcon")
         NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, prefs2.drawerIconSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(drawerIconSize = it))
         }
@@ -139,11 +142,11 @@ private fun PrimeCategoryFolderOptions(
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
-        AdvancedPlaceholder("Forme des icônes dans les dossiers", "Par défaut (Lawnchair)")
+        NullableShapePreference("Forme des icônes dans les dossiers", value.folderChildIconShape, tabId, "folderChildIcon")
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
-        AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (Lawnchair)")
-        AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (Lawnchair)")
+        NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.folderShape, tabId, "folderShape")
+        NullableColorPreference("Couleur de l’arrière-plan des icônes", value.folderColor, tabId, "folderColor")
         NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(folderPreviewOpacity = it))
         }
@@ -171,6 +174,8 @@ private fun PrimeCategoryFolderOptions(
 
 @Composable
 private fun PrimeFolderOptions(
+    tabId: String,
+    folderId: String,
     value: PrimeDrawerFolderVisualOverrides,
     inherited: PrimeDrawerFolderVisualOverrides,
     update: (PrimeDrawerFolderVisualOverrides) -> Unit,
@@ -178,11 +183,11 @@ private fun PrimeFolderOptions(
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
-        AdvancedPlaceholder("Forme des icônes dans les dossiers", "Par défaut (catégorie)")
+        NullableShapePreference("Forme des icônes dans les dossiers", value.childIconShape, tabId, "folderChildIcon", folderId)
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
-        AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (catégorie)")
-        AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (catégorie)")
+        NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.shape, tabId, "folderShape", folderId)
+        NullableColorPreference("Couleur de l’arrière-plan des icônes", value.color, tabId, "folderColor", folderId)
         NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, inherited.previewOpacity ?: prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(previewOpacity = it))
         }
@@ -208,18 +213,39 @@ private fun PrimeFolderOptions(
     }
 }
 
+
+@Composable
+private fun NullableShapePreference(
+    label: String,
+    value: String?,
+    tabId: String,
+    shapeKey: String,
+    folderId: String? = null,
+) {
+    val context = LocalContext.current
+    val navController = LocalNavController.current
+    val shape = value?.let { runCatching { IconShape.fromString(it, context) }.getOrNull() }
+    ClickablePreference(
+        label = label,
+        subtitle = if (value == null) "Configuration générale" else null,
+        endWidget = shape?.let { selected -> { IconShapePreview(iconShape = selected) } },
+        onClick = { navController.navigate(PrimeDrawerShape(tabId, shapeKey, label, folderId)) },
+    )
+}
+
 @Composable
 private fun NullableColorPreference(
     label: String,
     value: Int?,
     tabId: String,
     colorKey: String,
+    folderId: String? = null,
 ) {
     val navController = LocalNavController.current
     ColorPreference(
         label = label,
         selectedColor = value?.let { ColorOption.CustomColor(it) } ?: ColorOption.Default,
-        onClick = { navController.navigate(PrimeDrawerCategoryColor(tabId, colorKey, label)) },
+        onClick = { navController.navigate(PrimeDrawerCategoryColor(tabId, colorKey, label, folderId)) },
     )
 }
 
