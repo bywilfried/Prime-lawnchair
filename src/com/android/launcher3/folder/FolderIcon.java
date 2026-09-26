@@ -259,6 +259,24 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
         return icon;
     }
 
+
+    public void refreshPrimeVisualOverrides() {
+        if (mInfo == null) return;
+        PrimeDrawerFolderVisualOverrides overrides =
+                PrimeFolderLongPressHelper.getVisualOverrides(getContext(), mInfo);
+        mBackground.setPrimeOpacity(
+                overrides != null && overrides.getPreviewOpacity() != null
+                        ? overrides.getPreviewOpacity() : 1f);
+        mBackground.setPrimeColor(
+                overrides != null ? overrides.getColor() : null);
+        IconShape shape = null;
+        if (overrides != null && overrides.getShape() != null) {
+            shape = IconShape.Companion.fromString(overrides.getShape(), getContext());
+        }
+        mBackground.setPrimeShape(shape);
+        invalidate();
+    }
+
     public void animateBgShadowAndStroke() {
         mBackground.fadeInBackgroundShadow();
         mBackground.animateBackgroundStroke();
