@@ -65,6 +65,10 @@ import app.lawnchair.ui.preferences.destinations.SearchProviderPreferences
 import app.lawnchair.ui.preferences.destinations.SelectAppsForDrawerFolder
 import app.lawnchair.ui.preferences.destinations.SelectIconPreference
 import app.lawnchair.ui.preferences.destinations.ShapePreference
+import app.lawnchair.ui.preferences.destinations.PrimeShapeSelection
+import app.lawnchair.icons.shape.IconShape
+import app.lawnchair.preferences2.preferenceManager2
+import app.lawnchair.preferences2.firstCached
 import app.lawnchair.ui.preferences.destinations.SmartspacePreferences
 import com.android.launcher3.util.ComponentKey
 import soup.compose.material.motion.animation.materialSharedAxisXIn
@@ -192,6 +196,56 @@ fun PreferenceNavigation(
         composable<PrimeDrawerFolderAdvanced> { backStackEntry ->
             val route: PrimeDrawerFolderAdvanced = backStackEntry.toRoute()
             PrimeDrawerFolderAdvancedPreference(route.tabId, route.folderId)
+        }
+        composable<PrimeDrawerShape> { backStackEntry ->
+            val route: PrimeDrawerShape = backStackEntry.toRoute()
+            val context = LocalContext.current
+            val repository = PrimeDrawerTabsRepository(context)
+            val tab = repository.getTab(route.tabId) ?: return@composable
+            val folder = route.folderId?.let { id -> tab.folders.firstOrNull { it.id == id } }
+            val stored = when (route.shapeKey) {
+                "drawerIcon" -> tab.visualOverrides.drawerIconShape
+                "folderChildIcon" -> folder?.visualOverrides?.childIconShape ?: tab.visualOverrides.folderChildIconShape
+                "folderShape" -> folder?.visualOverrides?.shape ?: tab.visualOverrides.folderShape
+                else -> null
+            }
+            val prefs2 = preferenceManager2()
+            val inherited = when (route.shapeKey) {
+                "folderShape" -> prefs2.folderShape.firstCached()
+                else -> prefs2.iconShape.firstCached()
+            }
+            val selected = stored?.let { IconShape.fromString(it, context) } ?: inherited
+            PrimeShapeSelection(
+                label = route.label,
+                selectedShape = selected,
+                onSelect = { shape ->
+                    val currentTab = repository.getTab(route.tabId) ?: return@PrimeShapeSelection
+                    if (route.folderId == null) {
+                        val o = currentTab.visualOverrides
+                        repository.setTabVisualOverrides(
+                            route.tabId,
+                            when (route.shapeKey) {
+                                "drawerIcon" -> o.copy(drawerIconShape = shape?.toString())
+                                "folderChildIcon" -> o.copy(folderChildIconShape = shape?.toString())
+                                "folderShape" -> o.copy(folderShape = shape?.toString())
+                                else -> o
+                            },
+                        )
+                    } else {
+                        val currentFolder = currentTab.folders.firstOrNull { it.id == route.folderId } ?: return@PrimeShapeSelection
+                        val o = currentFolder.visualOverrides
+                        repository.setFolderVisualOverrides(
+                            route.tabId,
+                            route.folderId,
+                            when (route.shapeKey) {
+                                "folderChildIcon" -> o.copy(childIconShape = shape?.toString())
+                                "folderShape" -> o.copy(shape = shape?.toString())
+                                else -> o
+                            },
+                        )
+                    }
+                },
+            )
         }
         composable<PrimeDrawerCategoryColor> { backStackEntry ->
             val route: PrimeDrawerCategoryColor = backStackEntry.toRoute()
