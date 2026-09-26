@@ -140,7 +140,8 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 label = tab.getTitle();
             }
             final String tabId = tab.getId();
-            TextView pill = addPill(label, tabId.equals(configuration.getSelectedTabId()), () ->
+            Integer tabColor = tab.getVisualOverrides().getTabColor();
+            TextView pill = addPill(label, tabId.equals(configuration.getSelectedTabId()), tabColor, () ->
                     selectTab(parent, tabId, 0));
             pill.setTag(tabId);
             pill.setOnTouchListener((v, event) -> {
@@ -178,7 +179,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
                 return true;
             });
         }
-        addPill("+", false, () -> showCreateTabDialog(parent));
+        addPill("+", false, null, () -> showCreateTabDialog(parent));
         ensureSelectedTabVisible(configuration.getSelectedTabId());
     }
 
@@ -625,7 +626,7 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         dialog.show();
     }
 
-    private TextView addPill(String label, boolean selected, Runnable action) {
+    private TextView addPill(String label, boolean selected, @Nullable Integer selectedColor, Runnable action) {
         TextView pill = new TextView(getContext());
         pill.setText(label);
         pill.setGravity(Gravity.CENTER);
@@ -638,7 +639,9 @@ public class PrimeDrawerTabsView extends HorizontalScrollView implements Floatin
         background.setShape(GradientDrawable.RECTANGLE);
         background.setCornerRadius(dp(20));
         if (selected) {
-            background.setColor(Themes.getAttrColor(getContext(), android.R.attr.colorAccent));
+            background.setColor(selectedColor != null
+                    ? selectedColor
+                    : Themes.getAttrColor(getContext(), android.R.attr.colorAccent));
         } else {
             background.setColor(0x00000000);
             background.setStroke(dp(1),
