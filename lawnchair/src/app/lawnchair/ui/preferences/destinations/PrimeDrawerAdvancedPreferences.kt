@@ -53,7 +53,7 @@ fun PrimeDrawerCategoryAdvancedPreference(tabId: String) {
 
     PreferenceLayout(label = "Options avancées", backArrowVisible = true) {
         PrimeCategoryDrawerOptions(tabId, overrides.value, ::update)
-        PrimeCategoryFolderOptions(overrides.value, ::update)
+        PrimeCategoryFolderOptions(tabId, overrides.value, ::update)
     }
 }
 
@@ -92,7 +92,7 @@ private fun PrimeCategoryDrawerOptions(
     PreferenceGroup(heading = stringResource(id = R.string.style)) {
         NullableColorPreference("Couleur de l’onglet de cette catégorie", value.tabColor, tabId, "tab")
         NullableColorPreference("Couleur d’arrière-plan", value.drawerBackgroundColor, tabId, "background")
-        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, prefs.drawerOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.background_opacity), value.drawerBackgroundOpacity, prefs.drawerOpacity.getAdapter().state.value, 0f..1f, 0.1f, showAsPercentage = true) {
             update(value.copy(drawerBackgroundOpacity = it))
         }
     }
@@ -100,25 +100,25 @@ private fun PrimeCategoryDrawerOptions(
         NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, prefs2.drawerColumns.getAdapter().state.value, 3..10) {
             update(value.copy(drawerColumns = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, prefs2.drawerCellHeightFactor.getAdapter().state.value, 0.3f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, prefs2.drawerCellHeightFactor.getAdapter().state.value, 0.3f..1.5f, 0.1f, showAsPercentage = true) {
             update(value.copy(drawerRowHeight = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, prefs2.drawerLeftRightMarginFactor.getAdapter().state.value, 0f..1.5f, 0.05f, true) {
+        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, prefs2.drawerLeftRightMarginFactor.getAdapter().state.value, 0f..1.5f, 0.05f, showAsPercentage = true) {
             update(value.copy(drawerHorizontalMargin = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, prefs2.drawerPaddingTopFactor.getAdapter().state.value, 1f..2f, 0.05f, true) {
+        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, prefs2.drawerPaddingTopFactor.getAdapter().state.value, 1f..2f, 0.05f, showAsPercentage = true) {
             update(value.copy(drawerTopPadding = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
         NullableShapePreference("Forme des icônes", value.drawerIconShape, tabId, "drawerIcon")
-        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, prefs2.drawerIconSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, prefs2.drawerIconSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, showAsPercentage = true) {
             update(value.copy(drawerIconSize = it))
         }
         NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels, prefs2.showIconLabelsInDrawer.getAdapter().state.value) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, prefs2.drawerIconLabelSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, prefs2.drawerIconLabelSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, showAsPercentage = true) {
             update(value.copy(labelSize = it))
         }
         NullableSwitch(stringResource(id = R.string.twoline_label), value.twoLineLabels, prefs2.twoLineAllApps.getAdapter().state.value) {
@@ -137,6 +137,7 @@ private fun PrimeCategoryDrawerOptions(
 
 @Composable
 private fun PrimeCategoryFolderOptions(
+    tabId: String,
     value: PrimeDrawerVisualOverrides,
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
@@ -148,10 +149,10 @@ private fun PrimeCategoryFolderOptions(
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.folderShape, tabId, "folderShape")
         NullableColorPreference("Couleur de l’arrière-plan des icônes", value.folderColor, tabId, "folderColor")
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, showAsPercentage = true) {
             update(value.copy(folderPreviewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, showAsPercentage = true) {
             update(value.copy(folderBackgroundOpacity = it))
         }
     }
@@ -167,7 +168,7 @@ private fun PrimeCategoryFolderOptions(
         NullableSwitch(stringResource(id = R.string.show_labels), value.folderShowLabels, prefs2.showIconLabelsOnHomeScreenFolder.getAdapter().state.value) {
             update(value.copy(folderShowLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, showAsPercentage = true) {
             update(value.copy(folderLabelSize = it))
         }
     }
@@ -189,10 +190,10 @@ private fun PrimeFolderOptions(
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.shape, tabId, "folderShape", folderId)
         NullableColorPreference("Couleur de l’arrière-plan des icônes", value.color, tabId, "folderColor", folderId)
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, inherited.previewOpacity ?: prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.previewOpacity, inherited.previewOpacity ?: prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, showAsPercentage = true) {
             update(value.copy(previewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, inherited.backgroundOpacity ?: prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.backgroundOpacity, inherited.backgroundOpacity ?: prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, showAsPercentage = true) {
             update(value.copy(backgroundOpacity = it))
         }
     }
@@ -208,7 +209,7 @@ private fun PrimeFolderOptions(
         NullableSwitch(stringResource(id = R.string.show_labels), value.showLabels, inherited.showLabels ?: prefs2.showIconLabelsOnHomeScreenFolder.getAdapter().state.value) {
             update(value.copy(showLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, inherited.labelSize ?: prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.labelSize, inherited.labelSize ?: prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, showAsPercentage = true) {
             update(value.copy(labelSize = it))
         }
     }
