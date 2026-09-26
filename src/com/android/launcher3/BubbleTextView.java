@@ -195,6 +195,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     private boolean mLayoutHorizontal;
     private final boolean mIsRtl;
     private int mIconSize;
+    private final int mDefaultIconSize;
 
     @ViewDebug.ExportedProperty(category = "launcher")
     private boolean mHideBadge = false;
@@ -316,6 +317,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
         mIconSize = a.getDimensionPixelSize(R.styleable.BubbleTextView_iconSizeOverride,
                 defaultIconSize);
+        mDefaultIconSize = mIconSize;
         a.recycle();
 
         mRunningAppIndicatorHeight =
@@ -379,6 +381,14 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         setReorderBounceScale(1f);
         setTranslationY(0);
         setMaxLines(1);
+        setSingleLine(true);
+        if (mDisplay == DISPLAY_ALL_APPS || mDisplay == DISPLAY_PREDICTION_ROW
+                || mDisplay == DISPLAY_SEARCH_RESULT_APP_ROW || mDisplay == DISPLAY_DRAWER_FOLDER) {
+            mIconSize = mDefaultIconSize;
+            setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mDeviceProfile.getAllAppsProfile().getIconTextSizePx());
+            LawnchairUtilsKt.overrideAllAppsTextColor(this);
+        }
         setVisibility(VISIBLE);
 
         // Lawnchair: Icon swipe gesture feature
