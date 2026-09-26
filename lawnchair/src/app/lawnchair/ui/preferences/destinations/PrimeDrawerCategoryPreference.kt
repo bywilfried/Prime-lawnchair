@@ -74,7 +74,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                     onClick = { navController.navigate(PrimeDrawerCategoryFolders(tab.id)) },
                 )
                 ClickablePreference(
-                    label = stringResource(id = R.string.delete),
+                    label = "Supprimer",
                     onClick = { deleteOpen = true },
                 )
             }
@@ -84,7 +84,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
     if (deleteOpen) {
         AlertDialog(
             onDismissRequest = { deleteOpen = false },
-            title = { Text(stringResource(id = R.string.delete)) },
+            title = { Text("Supprimer") },
             text = { Text("Supprimer cette catégorie ?") },
             confirmButton = {
                 TextButton(
@@ -93,7 +93,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                         repository.deleteTab(tab.id)
                         navController.popBackStack()
                     },
-                ) { Text(stringResource(id = R.string.delete)) }
+                ) { Text("Supprimer") }
             },
             dismissButton = {
                 TextButton(onClick = { deleteOpen = false }) {
