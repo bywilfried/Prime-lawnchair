@@ -55,6 +55,8 @@ import com.android.launcher3.graphics.ThemeManager;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.ActivityContext;
 import app.lawnchair.preferences2.PreferenceCacheExtensionsKt;
+import app.lawnchair.icons.shape.IconShape;
+import app.lawnchair.icons.shape.PathShapeDelegate;
 
 import app.lawnchair.preferences2.PreferenceManager2;
 import app.lawnchair.theme.color.ColorOption;
@@ -92,6 +94,8 @@ public class PreviewBackground extends DelegatedCellDrawing {
     float mScale = 1f;
     private int mBgColor;
     private float mPrimeOpacity = 1f;
+    private Integer mPrimeColor;
+    private ShapeDelegate mPrimeShape;
     private int mStrokeColor;
     private int mDotColor;
     private float mStrokeWidth;
@@ -286,12 +290,22 @@ public class PreviewBackground extends DelegatedCellDrawing {
 
     public void drawBackground(Canvas canvas) {
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(getBgColor());
+        mPaint.setColor(mPrimeColor != null ? mPrimeColor : getBgColor());
         mPaint.setAlpha(Math.round(255 * mPrimeOpacity));
 
         getShape().drawShape(canvas, getOffsetX(), getOffsetY(), getScaledRadius(), mPaint);
         drawShadow(canvas);
         mPaint.setAlpha(255);
+    }
+
+    public void setPrimeColor(Integer color) {
+        mPrimeColor = color;
+        invalidate();
+    }
+
+    public void setPrimeShape(IconShape shape) {
+        mPrimeShape = shape == null ? null : new PathShapeDelegate(shape);
+        invalidate();
     }
 
     public void setPrimeOpacity(float opacity) {
@@ -300,7 +314,7 @@ public class PreviewBackground extends DelegatedCellDrawing {
     }
 
     private ShapeDelegate getShape() {
-        return ThemeManager.INSTANCE.get(mContext).getFolderShape();
+        return mPrimeShape != null ? mPrimeShape : ThemeManager.INSTANCE.get(mContext).getFolderShape();
     }
 
     public void drawShadow(Canvas canvas) {
