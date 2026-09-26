@@ -194,7 +194,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     private boolean mLayoutHorizontal;
     private final boolean mIsRtl;
-    private final int mIconSize;
+    private int mIconSize;
 
     @ViewDebug.ExportedProperty(category = "launcher")
     private boolean mHideBadge = false;
@@ -1593,6 +1593,17 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
 
     public void getSourceVisualDragBounds(Rect bounds) {
         getIconBounds(mIconSize, bounds);
+    }
+
+    /** Prime: updates the rendered icon bounds for per-category drawer overrides. */
+    public void setPrimeIconSize(int iconSize) {
+        if (iconSize <= 0 || mIconSize == iconSize) return;
+        mIconSize = iconSize;
+        if (getTag() instanceof ItemInfoWithIcon) {
+            applyIconAndLabel((ItemInfoWithIcon) getTag());
+        }
+        requestLayout();
+        invalidate();
     }
 
     @Override
