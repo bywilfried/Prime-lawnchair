@@ -91,6 +91,7 @@ public class PreviewBackground extends DelegatedCellDrawing {
 
     float mScale = 1f;
     private int mBgColor;
+    private float mPrimeOpacity = 1f;
     private int mStrokeColor;
     private int mDotColor;
     private float mStrokeWidth;
@@ -286,9 +287,16 @@ public class PreviewBackground extends DelegatedCellDrawing {
     public void drawBackground(Canvas canvas) {
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(getBgColor());
+        mPaint.setAlpha(Math.round(255 * mPrimeOpacity));
 
         getShape().drawShape(canvas, getOffsetX(), getOffsetY(), getScaledRadius(), mPaint);
         drawShadow(canvas);
+        mPaint.setAlpha(255);
+    }
+
+    public void setPrimeOpacity(float opacity) {
+        mPrimeOpacity = Math.max(0f, Math.min(1f, opacity));
+        invalidate();
     }
 
     private ShapeDelegate getShape() {
