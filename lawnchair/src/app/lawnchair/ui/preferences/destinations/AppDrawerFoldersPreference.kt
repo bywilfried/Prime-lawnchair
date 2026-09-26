@@ -225,6 +225,7 @@ fun FolderEditSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     hideAppPicker: Boolean = false,
+    onAdvanced: (() -> Unit)? = null,
 ) {
     val resources = LocalResources.current
     var textFieldValue by remember { mutableStateOf(TextFieldValue(initialTitle)) }
@@ -276,6 +277,15 @@ fun FolderEditSheet(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 ) {
                     onNavigate(folderId)
+                }
+                if (onAdvanced != null) {
+                    ClickablePreference(
+                        label = stringResource(id = R.string.prime_tab_advanced) + "*",
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    ) {
+                        onAdvanced()
+                    }
                 }
             }
         }
