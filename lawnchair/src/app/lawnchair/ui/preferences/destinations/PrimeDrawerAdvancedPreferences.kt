@@ -68,10 +68,18 @@ private fun PrimeCategoryDrawerOptions(
         AdvancedPlaceholder(stringResource(id = R.string.background_opacity), "Par défaut (Lawnchair)")
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        AdvancedPlaceholder(stringResource(id = R.string.app_drawer_columns), "Par défaut (Lawnchair)")
-        AdvancedPlaceholder(stringResource(id = R.string.row_height_label), "Par défaut (Lawnchair)")
-        AdvancedPlaceholder(stringResource(id = R.string.app_drawer_indent_label), "Par défaut (Lawnchair)")
-        AdvancedPlaceholder(stringResource(id = R.string.top_padding_label), "Par défaut (Lawnchair)")
+        NullableIntSlider(stringResource(id = R.string.app_drawer_columns), value.drawerColumns, 2..10) {
+            update(value.copy(drawerColumns = it))
+        }
+        NullableFloatSlider(stringResource(id = R.string.row_height_label), value.drawerRowHeight, 0.5f..1.5f, 0.1f) {
+            update(value.copy(drawerRowHeight = it))
+        }
+        NullableFloatSlider(stringResource(id = R.string.app_drawer_indent_label), value.drawerHorizontalMargin, 0f..2f, 0.1f) {
+            update(value.copy(drawerHorizontalMargin = it))
+        }
+        NullableFloatSlider(stringResource(id = R.string.top_padding_label), value.drawerTopPadding, 0f..2f, 0.1f) {
+            update(value.copy(drawerTopPadding = it))
+        }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
         AdvancedPlaceholder("Forme des icônes", "Par défaut (Lawnchair)")
@@ -89,8 +97,12 @@ private fun PrimeCategoryDrawerOptions(
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.advanced)) {
-        AdvancedPlaceholder(stringResource(id = R.string.pref_all_apps_remember_position_title), "Par défaut (Lawnchair)")
-        AdvancedPlaceholder(stringResource(id = R.string.pref_all_apps_show_scrollbar_title), "Par défaut (Lawnchair)")
+        NullableSwitch(stringResource(id = R.string.pref_all_apps_remember_position_title), value.rememberPosition) {
+            update(value.copy(rememberPosition = it))
+        }
+        NullableSwitch(stringResource(id = R.string.pref_all_apps_show_scrollbar_title), value.showScrollbar) {
+            update(value.copy(showScrollbar = it))
+        }
     }
 }
 
