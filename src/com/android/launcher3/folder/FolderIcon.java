@@ -94,6 +94,7 @@ import java.util.function.Predicate;
 
 import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.prime.drawer.PrimeFolderLongPressHelper;
+import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides;
 
 /**
  * An icon that can appear on in the workspace representing an {@link Folder}.
@@ -235,6 +236,11 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
 
         icon.mPreviewVerifier = createFolderGridOrganizer(activity.getDeviceProfile());
         icon.mPreviewVerifier.setFolderInfo(folderInfo);
+        PrimeDrawerFolderVisualOverrides primeOverrides =
+                PrimeFolderLongPressHelper.getVisualOverrides(icon.getContext(), folderInfo);
+        if (primeOverrides != null && primeOverrides.getPreviewOpacity() != null) {
+            icon.mBackground.setPrimeOpacity(primeOverrides.getPreviewOpacity());
+        }
         icon.updatePreviewItems(false);
 
         return icon;
