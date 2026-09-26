@@ -19,6 +19,7 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryApps
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryFolders
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerCategoryAdvanced
 import com.android.launcher3.R
 
 @Composable
@@ -74,7 +75,7 @@ fun PrimeDrawerCategoryPreference(tabId: String) {
                 )
                 ClickablePreference(
                     label = stringResource(id = R.string.prime_tab_advanced) + "*",
-                    onClick = {},
+                    onClick = { navController.navigate(PrimeDrawerCategoryAdvanced(tab.id)) },
                 )
             }
         }
