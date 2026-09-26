@@ -39,7 +39,6 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
     if (tab.isSystem) return
     var folders by remember { mutableStateOf(tab.folders) }
     val bottomSheetHandler = bottomSheetHandler
-    var deleteOpen by remember { mutableStateOf(false) }
 
     fun refresh() {
         folders = repository.getConfiguration().tabs.firstOrNull { it.id == tabId }?.folders.orEmpty()
@@ -117,6 +116,7 @@ private fun PrimeFolderItem(
     dragIndicator: @Composable () -> Unit,
 ) {
     val bottomSheetHandler = bottomSheetHandler
+    var deleteOpen by remember(folder.id) { mutableStateOf(false) }
     PreferenceTemplate(
         title = { Text(folder.title) },
         description = {
