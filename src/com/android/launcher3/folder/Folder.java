@@ -543,7 +543,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
 
         java.util.List<ItemInfo> removed = new java.util.ArrayList<>();
         for (ItemInfo item : new java.util.ArrayList<>(mInfo.getContents())) {
-            com.android.launcher3.util.ComponentKey key = item.componentKey;
+            com.android.launcher3.util.ComponentKey key = item.getComponentKey();
             if (key != null && !selectedKeys.contains(key)) {
                 removed.add(item);
             }
@@ -557,7 +557,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         java.util.Set<com.android.launcher3.util.ComponentKey> existing =
                 new java.util.HashSet<>();
         for (ItemInfo item : mInfo.getContents()) {
-            if (item.componentKey != null) existing.add(item.componentKey);
+            if (item.getComponentKey() != null) existing.add(item.getComponentKey());
         }
         for (com.android.launcher3.model.data.AppInfo app : allApps) {
             com.android.launcher3.util.ComponentKey key = app.toComponentKey();
