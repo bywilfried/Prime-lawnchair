@@ -221,8 +221,6 @@ private fun NullableSwitch(label: String, value: Boolean?, update: (Boolean?) ->
             description = null,
         )
         ClickablePreference(label = "Utiliser la configuration générale", onClick = { update(null) })
-        return
-        )
     }
 }
 
