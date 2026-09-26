@@ -50,6 +50,8 @@ import app.lawnchair.ui.preferences.destinations.PredictionsPreferences
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoriesPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryAppsPreference
+import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryAdvancedPreference
+import app.lawnchair.ui.preferences.destinations.PrimeDrawerFolderAdvancedPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDevelopmentOptionsPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerCategoryFoldersPreference
 import app.lawnchair.ui.preferences.destinations.PrimeDrawerFolderAppsPreference
@@ -179,6 +181,14 @@ fun PreferenceNavigation(
         composable<PrimeDrawerFolderApps> { backStackEntry ->
             val route: PrimeDrawerFolderApps = backStackEntry.toRoute()
             PrimeDrawerFolderAppsPreference(route.tabId, route.folderId)
+        }
+        composable<PrimeDrawerCategoryAdvanced> { backStackEntry ->
+            val route: PrimeDrawerCategoryAdvanced = backStackEntry.toRoute()
+            PrimeDrawerCategoryAdvancedPreference(route.tabId)
+        }
+        composable<PrimeDrawerFolderAdvanced> { backStackEntry ->
+            val route: PrimeDrawerFolderAdvanced = backStackEntry.toRoute()
+            PrimeDrawerFolderAdvancedPreference(route.tabId, route.folderId)
         }
         composable<AppDrawerHiddenApps>(
             deepLinks = getDeepLink(AppDrawerHiddenApps),
