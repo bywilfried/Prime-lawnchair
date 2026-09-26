@@ -252,10 +252,12 @@ fun PreferenceNavigation(
             val context = LocalContext.current
             val repository = PrimeDrawerTabsRepository(context)
             val tab = repository.getTab(route.tabId)
-            val current = if (route.colorKey == "tab") {
-                tab?.visualOverrides?.tabColor
-            } else {
-                tab?.visualOverrides?.drawerBackgroundColor
+            val folder = route.folderId?.let { id -> tab?.folders?.firstOrNull { it.id == id } }
+            val current = when (route.colorKey) {
+                "tab" -> tab?.visualOverrides?.tabColor
+                "background" -> tab?.visualOverrides?.drawerBackgroundColor
+                "folderColor" -> folder?.visualOverrides?.color ?: tab?.visualOverrides?.folderColor
+                else -> null
             }
             PrimeColorSelection(
                 label = route.label,
@@ -265,12 +267,25 @@ fun PreferenceNavigation(
                         ColorOption.Default -> null
                         else -> option.colorPreferenceEntry.lightColor(context)
                     }
-                    val overrides = repository.getTab(route.tabId)?.visualOverrides ?: return@PrimeColorSelection
-                    repository.setTabVisualOverrides(
-                        route.tabId,
-                        if (route.colorKey == "tab") overrides.copy(tabColor = resolved)
-                        else overrides.copy(drawerBackgroundColor = resolved),
-                    )
+                    val currentTab = repository.getTab(route.tabId) ?: return@PrimeColorSelection
+                    if (route.folderId != null && route.colorKey == "folderColor") {
+                        val currentFolder = currentTab.folders.firstOrNull { it.id == route.folderId } ?: return@PrimeColorSelection
+                        repository.setFolderVisualOverrides(
+                            route.tabId,
+                            route.folderId,
+                            currentFolder.visualOverrides.copy(color = resolved),
+                        )
+                    } else {
+                        val overrides = currentTab.visualOverrides
+                        repository.setTabVisualOverrides(
+                            route.tabId,
+                            when (route.colorKey) {
+                                "tab" -> overrides.copy(tabColor = resolved)
+                                "folderColor" -> overrides.copy(folderColor = resolved)
+                                else -> overrides.copy(drawerBackgroundColor = resolved)
+                            },
+                        )
+                    }
                 },
             )
         }
