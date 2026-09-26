@@ -1,6 +1,7 @@
 package app.lawnchair.prime.drawer;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
