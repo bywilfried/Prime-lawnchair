@@ -93,6 +93,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import app.lawnchair.preferences.PreferenceManager;
+import app.lawnchair.prime.drawer.PrimeFolderLongPressHelper;
 
 /**
  * An icon that can appear on in the workspace representing an {@link Folder}.
@@ -106,6 +107,7 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
     public FolderInfo mInfo;
 
     private CheckLongPressHelper mLongPressHelper;
+    private PrimeFolderLongPressHelper mPrimeLongPressHelper;
 
     static final int DROP_IN_ANIMATION_DURATION = 400;
 
@@ -169,6 +171,7 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
 
     private void init() {
         mLongPressHelper = new CheckLongPressHelper(this);
+        mPrimeLongPressHelper = new PrimeFolderLongPressHelper(this);
         mPreviewLayoutRule = new ClippedFolderIconLayoutRule();
         mPreviewItemManager = new PreviewItemManager(this);
         mDotParams = new DotRenderer.DrawParams();
@@ -221,6 +224,7 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
 
         icon.setTag(folderInfo);
         icon.setOnClickListener(activity.getItemOnClickListener());
+        icon.setOnLongClickListener(icon.mPrimeLongPressHelper::onLongClick);
         icon.mInfo = folderInfo;
         icon.mActivity = activity;
         icon.mDotRenderer = grid.mDotRendererWorkSpace;
@@ -724,6 +728,7 @@ public class FolderIcon extends FrameLayout implements FloatingIconViewCompanion
         // isPressed() on an ACTION_UP
         super.onTouchEvent(event);
         mLongPressHelper.onTouchEvent(event);
+        mPrimeLongPressHelper.onTouchEvent(event);
         // Keep receiving the rest of the events
         return true;
     }
