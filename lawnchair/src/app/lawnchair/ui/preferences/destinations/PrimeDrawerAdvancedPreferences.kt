@@ -132,32 +132,34 @@ private fun PrimeCategoryFolderOptions(
     value: PrimeDrawerVisualOverrides,
     update: (PrimeDrawerVisualOverrides) -> Unit,
 ) {
+    val prefs = preferenceManager()
+    val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
         AdvancedPlaceholder("Forme des icônes dans les dossiers", "Par défaut (Lawnchair)")
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         AdvancedPlaceholder(stringResource(id = R.string.folder_shape_label), "Par défaut (Lawnchair)")
         AdvancedPlaceholder("Couleur de l’arrière-plan des icônes", "Par défaut (Lawnchair)")
-        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_preview_bg_opacity_label), value.folderPreviewOpacity, prefs2.folderPreviewBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(folderPreviewOpacity = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, 0f..1f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.folder_bg_opacity_label), value.folderBackgroundOpacity, prefs2.folderBackgroundOpacity.getAdapter().state.value, 0f..1f, 0.1f, true) {
             update(value.copy(folderBackgroundOpacity = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.grid)) {
-        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.folderColumns, 2..5) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_columns), value.folderColumns, prefs2.folderColumns.getAdapter().state.value, 2..5) {
             update(value.copy(folderColumns = it))
         }
-        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.folderRows, 2..5) {
+        NullableIntSlider(stringResource(id = R.string.max_folder_rows), value.folderRows, prefs.folderRows.getAdapter().state.value, 2..5) {
             update(value.copy(folderRows = it))
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
-        NullableSwitch(stringResource(id = R.string.show_labels), value.folderShowLabels) {
+        NullableSwitch(stringResource(id = R.string.show_labels), value.folderShowLabels, prefs2.showIconLabelsOnHomeScreenFolder.getAdapter().state.value) {
             update(value.copy(folderShowLabels = it))
         }
-        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, 0.5f..1.5f, 0.1f, true) {
+        NullableFloatSlider(stringResource(id = R.string.label_size), value.folderLabelSize, prefs2.homeIconLabelFolderSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(folderLabelSize = it))
         }
     }
