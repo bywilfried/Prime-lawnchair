@@ -162,22 +162,8 @@ public final class PrimeFolderLongPressHelper {
         ActivityContext activity = ActivityContext.lookupContext(mIcon.getContext());
         if (activity == null) return;
         ArrayList<OptionsPopupView.OptionItem> items = new ArrayList<>();
-        items.add(option(mIcon.getContext().getString(R.string.prime_tab_rename), v -> {
-            showRenameDialog();
-            return true;
-        }));
-        items.add(option(mIcon.getContext().getString(R.string.prime_tab_apps), v -> {
-            showAppsDialog();
-            return true;
-        }));
-        items.add(option(mIcon.getContext().getString(R.string.prime_tab_advanced) + "*", v -> {
-            PrimeFolderRef ref = getPrimeRef(mIcon.mInfo);
-            if (ref != null) {
-                mIcon.getContext().startActivity(
-                        PreferenceActivity.createIntent(
-                                mIcon.getContext(),
-                                new PrimeDrawerFolderAdvanced(ref.tabId, ref.folderId)));
-            }
+        items.add(option(mIcon.getContext().getString(R.string.prime_edit_folder), v -> {
+            showFolderEditDialog();
             return true;
         }));
 
@@ -192,6 +178,72 @@ public final class PrimeFolderLongPressHelper {
         return new OptionsPopupView.OptionItem(
                 label, new ColorDrawable(android.graphics.Color.TRANSPARENT),
                 LauncherEvent.IGNORE, action);
+    }
+
+    private void showFolderEditDialog() {
+        EditText input = new EditText(mIcon.getContext());
+        input.setText(mIcon.mInfo.title);
+        input.setSelectAllOnFocus(true);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+        LinearLayout content = new LinearLayout(mIcon.getContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        int padding = dp(24);
+        content.setPadding(padding, dp(8), padding, 0);
+        content.addView(input, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        android.widget.TextView manageApps = new android.widget.TextView(mIcon.getContext());
+        manageApps.setText(R.string.prime_tab_apps);
+        manageApps.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        manageApps.setPadding(dp(8), dp(20), dp(8), dp(20));
+        content.addView(manageApps);
+
+        android.widget.TextView advanced = new android.widget.TextView(mIcon.getContext());
+        advanced.setText(R.string.prime_tab_advanced);
+        advanced.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        advanced.setPadding(dp(8), dp(20), dp(8), dp(20));
+        content.addView(advanced);
+
+        AlertDialog dialog = new AlertDialog.Builder(mIcon.getContext())
+                .setTitle(R.string.prime_edit_folder)
+                .setView(content)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok, null)
+                .create();
+
+        manageApps.setOnClickListener(v -> {
+            dialog.dismiss();
+            showAppsDialog();
+        });
+        advanced.setOnClickListener(v -> {
+            dialog.dismiss();
+            PrimeFolderRef ref = getPrimeRef(mIcon.mInfo);
+            if (ref != null) {
+                mIcon.getContext().startActivity(
+                        PreferenceActivity.createIntent(
+                                mIcon.getContext(),
+                                new PrimeDrawerFolderAdvanced(ref.tabId, ref.folderId)));
+            }
+        });
+        dialog.setOnShowListener(ignored ->
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+                    String title = input.getText().toString().trim();
+                    if (title.isEmpty()) return;
+                    PrimeFolderRef ref = getPrimeRef(mIcon.mInfo);
+                    if (mIcon.isInAppDrawer() && ref != null) {
+                        new PrimeDrawerTabsRepository(mIcon.getContext())
+                                .renameFolder(ref.tabId, ref.folderId, title);
+                        mIcon.mInfo.setTitle(title, null);
+                    } else {
+                        Launcher launcher = Launcher.getLauncher(mIcon.getContext());
+                        mIcon.mInfo.setTitle(title, launcher.getModelWriter());
+                    }
+                    mIcon.onTitleChanged(title);
+                    dialog.dismiss();
+                }));
+        dialog.show();
     }
 
     private void showRenameDialog() {
