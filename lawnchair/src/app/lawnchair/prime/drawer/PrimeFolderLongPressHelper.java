@@ -69,7 +69,10 @@ public final class PrimeFolderLongPressHelper {
         if (!shouldHandle(mIcon)) return false;
         mIcon.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         mLongPressActive = true;
-        showMenu();
+        // Keep the gesture owned by the folder icon after the long press. Showing the popup here
+        // would move touch handling to DragLayer, allowing workspace swipes/notification gestures
+        // to steal the MOVE event before we can turn it into a drag.
+        mIcon.getParent().requestDisallowInterceptTouchEvent(true);
         return true;
     }
 
@@ -93,6 +96,11 @@ public final class PrimeFolderLongPressHelper {
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                if (mLongPressActive) {
+                    mLongPressActive = false;
+                    showMenu();
+                }
+                break;
             case MotionEvent.ACTION_CANCEL:
                 mLongPressActive = false;
                 break;
