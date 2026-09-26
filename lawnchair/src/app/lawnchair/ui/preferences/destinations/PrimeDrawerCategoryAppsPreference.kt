@@ -10,11 +10,35 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import app.lawnchair.data.folder.FolderEntry
 import app.lawnchair.preferences.PreferenceManager
+import app.lawnchair.prime.drawer.PrimeDrawerFolder
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository
+import app.lawnchair.ui.preferences.LocalIsExpandedScreen
+import app.lawnchair.ui.preferences.components.AppItem
+import app.lawnchair.ui.preferences.components.layout.PreferenceScaffold
+import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
+import app.lawnchair.ui.preferences.components.reorderable.PositionalList
+import app.lawnchair.ui.preferences.components.reorderable.PositionalListItem
+import app.lawnchair.ui.preferences.components.reorderable.PositionalListOverflowMenu
+import app.lawnchair.ui.preferences.components.reorderable.rememberPositionalListState
+import app.lawnchair.util.App
 import app.lawnchair.util.appsState
 import com.android.launcher3.util.ComponentKey
+
+private sealed interface PrimeCategoryListItem {
+    val key: String
+    val label: String
+
+    data class AppItem(val app: App) : PrimeCategoryListItem {
+        override val key = app.key.toString()
+        override val label = app.label
+    }
+
+    data class FolderItem(val folder: PrimeDrawerFolder) : PrimeCategoryListItem {
+        override val key = "folder:" + folder.id
+        override val label = folder.title
+    }
+}
 
 @Composable
 fun PrimeDrawerCategoryAppsPreference(tabId: String) {
@@ -30,6 +54,7 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         repository.registerConfigurationChangeListener(listener)
         onDispose { repository.unregisterConfigurationChangeListener(listener) }
     }
+
     val apps = appsState().value
     val tab = configuration.value.tabs.firstOrNull { it.id == tabId } ?: return
     val hideFolderApps = PreferenceManager.getInstance(context).primeHideFolderApps.get()
@@ -40,81 +65,119 @@ fun PrimeDrawerCategoryAppsPreference(tabId: String) {
         if (hideFolderApps) tab.apps - folderAppKeys else tab.apps
     }
 
-    val orderedKeys = if (tab.sortMode == "custom") {
-        tab.customOrder.filter(visibleTabApps::contains) +
-            visibleTabApps.filterNot(tab.customOrder::contains)
-    } else {
-        visibleTabApps.sortedBy { key ->
-            apps.firstOrNull { it.key.toString() == key }?.label?.lowercase() ?: key
+    val activeApps = apps
+        .filter { it.key.toString() in visibleTabApps }
+        .map { PrimeCategoryListItem.AppItem(it) }
+    val folders = tab.folders.map { PrimeCategoryListItem.FolderItem(it) }
+    val customIndex = tab.customOrder.withIndex().associate { it.value to it.index }
+
+    fun <T : PrimeCategoryListItem> alphabetical(items: List<T>) =
+        items.sortedBy { it.label.lowercase() }
+
+    val activeItems: List<PrimeCategoryListItem> = when (tab.folderPlacement) {
+        "end" -> {
+            val orderedApps = if (tab.sortMode == "custom") activeApps.sortedBy { customIndex[it.key] ?: Int.MAX_VALUE } else alphabetical(activeApps)
+            val orderedFolders = if (tab.sortMode == "custom") folders.sortedBy { customIndex[it.key] ?: Int.MAX_VALUE } else alphabetical(folders)
+            orderedApps + orderedFolders
+        }
+        "mixed" -> {
+            val items = activeApps + folders
+            if (tab.sortMode == "custom") items.sortedBy { customIndex[it.key] ?: Int.MAX_VALUE } else alphabetical(items)
+        }
+        else -> {
+            val orderedFolders = if (tab.sortMode == "custom") folders.sortedBy { customIndex[it.key] ?: Int.MAX_VALUE } else alphabetical(folders)
+            val orderedApps = if (tab.sortMode == "custom") activeApps.sortedBy { customIndex[it.key] ?: Int.MAX_VALUE } else alphabetical(activeApps)
+            orderedFolders + orderedApps
         }
     }
 
-    SelectAppsForDrawerFolder(
-        folderEntry = FolderEntry(
-            id = 0,
-            title = tab.title,
-            itemComponentKeys = orderedKeys,
-        ),
-        apps = apps,
-        allFolderPackages = emptySet(),
-        onUpdate = { _, componentKeys ->
-            val updatedVisibleKeys = componentKeys.mapNotNull(ComponentKey::fromString).toSet()
+    val activeAppKeys = activeApps.mapTo(hashSetOf()) { it.key }
+    val inactiveItems = apps
+        .filter { it.key.toString() !in activeAppKeys }
+        .sortedBy { it.label.lowercase() }
+        .map { PrimeCategoryListItem.AppItem(it) }
+
+    val positionalItems = (activeItems + inactiveItems).map {
+        PositionalListItem(data = it, id = it.key)
+    }
+    val state = rememberPositionalListState(
+        items = positionalItems,
+        activeCount = activeItems.size,
+        onOrderChange = { newList, newCount ->
+            val active = newList.take(newCount)
+            val visibleAppKeys = active.mapNotNull { (it.data as? PrimeCategoryListItem.AppItem)?.app?.key }
             val hiddenFolderKeys = if (hideFolderApps) {
-                tab.apps.intersect(folderAppKeys).mapNotNull(ComponentKey::fromString).toSet()
+                tab.apps.intersect(folderAppKeys).mapNotNull(ComponentKey::fromString)
             } else {
-                emptySet()
+                emptyList()
             }
-            repository.setTabApps(
-                tabId,
-                updatedVisibleKeys + hiddenFolderKeys,
-            )
+            repository.setTabApps(tabId, (visibleAppKeys + hiddenFolderKeys).toSet())
             if (tab.sortMode == "custom") {
-                val visibleKeySet = componentKeys.toSet()
-                val updatedOrder = buildList {
-                    var visibleIndex = 0
-                    tab.customOrder.forEach { key ->
-                        if (key in visibleTabApps) {
-                            if (visibleIndex < componentKeys.size) add(componentKeys[visibleIndex++])
-                        } else {
-                            add(key)
-                        }
-                    }
-                    while (visibleIndex < componentKeys.size) add(componentKeys[visibleIndex++])
-                    componentKeys.filterNot(visibleKeySet::contains).forEach(::add)
-                }.distinct()
-                repository.setTabCustomOrder(tabId, updatedOrder)
+                val orderedMembers = newList.map { it.id }.filter { key ->
+                    key.startsWith("folder:") || key in active.map { it.id }
+                }
+                repository.setTabCustomOrder(tabId, orderedMembers)
             }
         },
-        showDuplicateFilter = false,
-        showStandardMenuActions = false,
-        preserveActiveOrder = tab.sortMode == "custom",
-        reorderEnabled = tab.sortMode == "custom",
-        extraMenuContent = { hideMenu ->
-            DropdownMenuItem(
-                text = { Text("Alphabétique") },
-                trailingIcon = { if (tab.sortMode == "alphabetical") Icon(Icons.Rounded.Check, null) },
-                onClick = { repository.setTabSortMode(tabId, "alphabetical"); hideMenu() },
-            )
-            DropdownMenuItem(
-                text = { Text("Personnalisé") },
-                trailingIcon = { if (tab.sortMode == "custom") Icon(Icons.Rounded.Check, null) },
-                onClick = { repository.setTabSortMode(tabId, "custom"); hideMenu() },
-            )
-            DropdownMenuItem(
-                text = { Text("Au début") },
-                trailingIcon = { if (tab.folderPlacement == "start") Icon(Icons.Rounded.Check, null) },
-                onClick = { repository.setTabFolderPlacement(tabId, "start"); hideMenu() },
-            )
-            DropdownMenuItem(
-                text = { Text("À la fin") },
-                trailingIcon = { if (tab.folderPlacement == "end") Icon(Icons.Rounded.Check, null) },
-                onClick = { repository.setTabFolderPlacement(tabId, "end"); hideMenu() },
-            )
-            DropdownMenuItem(
-                text = { Text("Comme les applications") },
-                trailingIcon = { if (tab.folderPlacement == "mixed") Icon(Icons.Rounded.Check, null) },
-                onClick = { repository.setTabFolderPlacement(tabId, "mixed"); hideMenu() },
+        labelSelector = { it.label },
+    )
+
+    PreferenceScaffold(
+        label = "${tab.title} (${state.activeCount})",
+        actions = {
+            PositionalListOverflowMenu(
+                state = state,
+                showStandardActions = false,
+                extraItems = { hideMenu ->
+                    DropdownMenuItem(
+                        text = { Text("Alphabétique") },
+                        trailingIcon = { if (tab.sortMode == "alphabetical") Icon(Icons.Rounded.Check, null) },
+                        onClick = { repository.setTabSortMode(tabId, "alphabetical"); hideMenu() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Personnalisé") },
+                        trailingIcon = { if (tab.sortMode == "custom") Icon(Icons.Rounded.Check, null) },
+                        onClick = { repository.setTabSortMode(tabId, "custom"); hideMenu() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Au début") },
+                        trailingIcon = { if (tab.folderPlacement == "start") Icon(Icons.Rounded.Check, null) },
+                        onClick = { repository.setTabFolderPlacement(tabId, "start"); hideMenu() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("À la fin") },
+                        trailingIcon = { if (tab.folderPlacement == "end") Icon(Icons.Rounded.Check, null) },
+                        onClick = { repository.setTabFolderPlacement(tabId, "end"); hideMenu() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Comme les applications") },
+                        trailingIcon = { if (tab.folderPlacement == "mixed") Icon(Icons.Rounded.Check, null) },
+                        onClick = { repository.setTabFolderPlacement(tabId, "mixed"); hideMenu() },
+                    )
+                },
             )
         },
-    )
+        isExpandedScreen = LocalIsExpandedScreen.current,
+    ) { contentPadding ->
+        PositionalList(
+            state = state,
+            contentPadding = contentPadding,
+            reorderEnabled = tab.sortMode == "custom",
+            itemContent = { item, dragHandle, toggle ->
+                when (item) {
+                    is PrimeCategoryListItem.AppItem -> AppItem(
+                        app = item.app,
+                        onClick = {},
+                        widget = dragHandle,
+                        endWidget = toggle,
+                    )
+                    is PrimeCategoryListItem.FolderItem -> PreferenceTemplate(
+                        title = { Text(item.folder.title) },
+                        description = { Text("Dossier") },
+                        startWidget = dragHandle,
+                    )
+                }
+            },
+        )
+    }
 }
