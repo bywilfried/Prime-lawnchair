@@ -4,6 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
+import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.dp
+import app.lawnchair.ui.preferences.components.colorpreference.pickers.CustomColorPicker
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,7 +21,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.lawnchair.prime.drawer.PrimeDrawerFolderVisualOverrides
@@ -195,28 +204,65 @@ private fun PrimeFolderOptions(
 
 @Composable
 private fun NullableColorPreference(label: String, value: Int?, update: (Int?) -> Unit) {
-    val palette = listOf(
-        0xFF000000.toInt(), 0xFFFFFFFF.toInt(), 0xFF607D8B.toInt(),
-        0xFF2196F3.toInt(), 0xFF3F51B5.toInt(), 0xFF673AB7.toInt(),
-        0xFFE91E63.toInt(), 0xFFF44336.toInt(), 0xFFFF9800.toInt(),
-        0xFF4CAF50.toInt(), 0xFF009688.toInt(),
-    )
-    if (value == null) {
-        ClickablePreference(label = label, subtitle = "Par défaut — toucher pour personnaliser") {
-            update(palette[3])
-        }
-    } else {
-        val index = palette.indexOf(value).let { if (it < 0) 0 else it }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { update(palette[(index + 1) % palette.size]) }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        ) {
-            Text(text = "$label — toucher pour changer", modifier = Modifier.weight(1f))
+    val showPicker = remember { mutableStateOf(false) }
+    val draftColor = remember(value) { mutableStateOf(value ?: 0xFF2196F3.toInt()) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                draftColor.value = value ?: 0xFF2196F3.toInt()
+                showPicker.value = true
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Text(
+            text = if (value == null) "$label\nPar défaut — toucher pour personnaliser"
+            else "$label\nPersonnalisé — toucher pour changer",
+            modifier = Modifier.weight(1f),
+        )
+        if (value != null) {
             Text(text = "   ", modifier = Modifier.background(Color(value)))
         }
+    }
+    if (value != null) {
         ClickablePreference(label = "Utiliser la valeur par défaut", onClick = { update(null) })
+    }
+
+    if (showPicker.value) {
+        Dialog(onDismissRequest = { showPicker.value = false }) {
+            Surface {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 720.dp)
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 12.dp),
+                ) {
+                    Text(text = label, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                    CustomColorPicker(
+                        selectedColor = draftColor.value,
+                        onSelect = { draftColor.value = it },
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(onClick = { showPicker.value = false }) {
+                            Text("Annuler")
+                        }
+                        Button(onClick = {
+                            update(draftColor.value)
+                            showPicker.value = false
+                        }) {
+                            Text("Appliquer")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
