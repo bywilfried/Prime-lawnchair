@@ -25,6 +25,7 @@ import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import app.lawnchair.ui.preferences.components.reorderable.ReorderableDragHandle
 import app.lawnchair.ui.preferences.components.reorderable.ReorderablePreferenceGroup
 import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderApps
+import app.lawnchair.ui.preferences.navigation.PrimeDrawerFolderAdvanced
 import app.lawnchair.ui.util.bottomSheetHandler
 import com.android.launcher3.R
 
@@ -92,6 +93,10 @@ fun PrimeDrawerCategoryFoldersPreference(tabId: String) {
                     bottomSheetHandler.hide()
                     navController.navigate(PrimeDrawerFolderApps(tabId, folder.id))
                 },
+                onAdvanced = {
+                    bottomSheetHandler.hide()
+                    navController.navigate(PrimeDrawerFolderAdvanced(tabId, folder.id))
+                },
                 interactionSource = interactionSource,
                 dragIndicator = {
                     ReorderableDragHandle(
@@ -110,6 +115,7 @@ private fun PrimeFolderItem(
     onRename: (String) -> Unit,
     onDelete: () -> Unit,
     onManageApps: () -> Unit,
+    onAdvanced: () -> Unit,
     interactionSource: MutableInteractionSource,
     dragIndicator: @Composable () -> Unit,
 ) {
@@ -146,6 +152,7 @@ private fun PrimeFolderItem(
                     itemCount = folder.apps.size,
                     onRename = { _, title -> onRename(title) },
                     onNavigate = { onManageApps() },
+                    onAdvanced = { onAdvanced() },
                     onDismiss = { bottomSheetHandler.hide() },
                 )
             }
