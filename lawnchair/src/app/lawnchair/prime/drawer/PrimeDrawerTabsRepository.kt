@@ -232,6 +232,21 @@ class PrimeDrawerTabsRepository(context: Context) {
         )
     }
 
+    fun getResolvedFolderVisualOverrides(tabId: String, folderId: String): PrimeDrawerFolderVisualOverrides? {
+        val tab = getConfiguration().tabs.firstOrNull { it.id == tabId } ?: return null
+        val folder = tab.folders.firstOrNull { it.id == folderId } ?: return null
+        val category = tab.visualOverrides
+        val own = folder.visualOverrides
+        return PrimeDrawerFolderVisualOverrides(
+            previewOpacity = own.previewOpacity ?: category.folderPreviewOpacity,
+            backgroundOpacity = own.backgroundOpacity ?: category.folderBackgroundOpacity,
+            columns = own.columns ?: category.folderColumns,
+            rows = own.rows ?: category.folderRows,
+            showLabels = own.showLabels ?: category.folderShowLabels,
+            labelSize = own.labelSize ?: category.folderLabelSize,
+        )
+    }
+
     fun getSelectedTabVisualOverrides(): PrimeDrawerVisualOverrides? {
         val configuration = getConfiguration()
         return configuration.tabs.firstOrNull { it.id == configuration.selectedTabId }
