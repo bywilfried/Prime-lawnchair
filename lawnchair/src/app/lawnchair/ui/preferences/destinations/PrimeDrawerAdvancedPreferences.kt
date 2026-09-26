@@ -111,7 +111,7 @@ private fun PrimeCategoryDrawerOptions(
         }
     }
     PreferenceGroup(heading = stringResource(id = R.string.icons)) {
-        NullableShapePreference("Forme des icônes", value.drawerIconShape, tabId, "drawerIcon")
+        NullableShapePreference("Forme des icônes" + NOT_IMPLEMENTED, value.drawerIconShape, tabId, "drawerIcon")
         NullableFloatSlider(stringResource(id = R.string.icon_sizes), value.drawerIconSize, prefs2.drawerIconSizeFactor.getAdapter().state.value, 0.5f..1.5f, 0.1f, true) {
             update(value.copy(drawerIconSize = it))
         }
@@ -143,7 +143,7 @@ private fun PrimeCategoryFolderOptions(
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
-        NullableShapePreference("Forme des icônes dans les dossiers", value.folderChildIconShape, tabId, "folderChildIcon")
+        NullableShapePreference("Forme des icônes dans les dossiers" + NOT_IMPLEMENTED, value.folderChildIconShape, tabId, "folderChildIcon")
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.folderShape, tabId, "folderShape")
@@ -184,7 +184,7 @@ private fun PrimeFolderOptions(
     val prefs = preferenceManager()
     val prefs2 = preferenceManager2()
     PreferenceGroup(heading = stringResource(id = R.string.folders_label)) {
-        NullableShapePreference("Forme des icônes dans les dossiers", value.childIconShape, tabId, "folderChildIcon", folderId)
+        NullableShapePreference("Forme des icônes dans les dossiers" + NOT_IMPLEMENTED, value.childIconShape, tabId, "folderChildIcon", folderId)
     }
     PreferenceGroup(heading = stringResource(id = R.string.general_label)) {
         NullableShapePreference(stringResource(id = R.string.folder_shape_label), value.shape, tabId, "folderShape", folderId)
