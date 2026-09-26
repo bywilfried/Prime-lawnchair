@@ -380,8 +380,9 @@ public class FolderPagedView extends PagedView<PageIndicatorDots> implements Cli
                     PrimeFolderLongPressHelper.getVisualOverrides(getContext(), mFolder.getInfo());
             if (primeOverrides != null) {
                 BubbleTextView bubble = (BubbleTextView) icon;
-                if (primeOverrides.getShowLabels() != null && !primeOverrides.getShowLabels()) {
-                    bubble.setTextColor(android.graphics.Color.TRANSPARENT);
+                bubble.setTextVisibility(true);
+                if (primeOverrides.getShowLabels() != null) {
+                    bubble.setTextVisibility(primeOverrides.getShowLabels());
                 }
                 if (primeOverrides.getLabelSize() != null) {
                     bubble.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
