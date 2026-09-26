@@ -27,6 +27,7 @@ import static com.android.launcher3.allapps.UserProfileManager.STATE_ENABLED;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,6 +48,10 @@ import com.android.launcher3.folder.FolderIcon;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.FolderInfo;
 import com.android.launcher3.views.ActivityContext;
+
+import app.lawnchair.preferences.PreferenceManager;
+import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository;
+import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides;
 
 /**
  * Adapter for all the apps.
@@ -297,6 +302,7 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                                         && privateProfileManager.isPrivateSpaceItem(adapterItem)));
                 icon.setSkipUserBadge(skipUserBadge);
                 icon.applyFromApplicationInfo(adapterItem.itemInfo);
+                applyPrimeTabIconOverrides(icon);
                 icon.setOnFocusChangeListener(mIconFocusListener);
                 if (privateProfileManager != null) {
                     // Set the alpha of the private space icon to 0 upon expanding the header so the
@@ -378,6 +384,31 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                 if (mAdapterProvider.isViewSupported(holder.getItemViewType())) {
                     mAdapterProvider.onBindView(holder, position);
                 }
+        }
+    }
+
+    private void applyPrimeTabIconOverrides(BubbleTextView icon) {
+        if (!PreferenceManager.getInstance(mActivityContext).getDrawerTabsEnabled().get()) return;
+        PrimeDrawerVisualOverrides overrides =
+                new PrimeDrawerTabsRepository(mActivityContext).getSelectedTabVisualOverrides();
+        if (overrides == null) return;
+
+        if (overrides.getShowLabels() != null) {
+            icon.setTextColor(overrides.getShowLabels()
+                    ? Themes.getAttrColor(mActivityContext, android.R.attr.textColorPrimary)
+                    : android.graphics.Color.TRANSPARENT);
+        }
+        if (overrides.getLabelSize() != null) {
+            float defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().allAppsIconTextSizePx;
+            icon.setTextSize(TypedValue.COMPLEX_UNIT_PX, defaultSize * overrides.getLabelSize());
+        }
+        if (overrides.getDrawerIconSize() != null) {
+            int defaultSize = mActivityContext.getDeviceProfile().getAllAppsProfile().allAppsIconSizePx;
+            icon.setIconSize(Math.round(defaultSize * overrides.getDrawerIconSize()));
+        }
+        if (overrides.getTwoLineLabels() != null) {
+            icon.setSingleLine(!overrides.getTwoLineLabels());
+            icon.setMaxLines(overrides.getTwoLineLabels() ? 2 : 1);
         }
     }
 
