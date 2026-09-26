@@ -32,6 +32,7 @@ import app.lawnchair.ui.preferences.components.controls.SliderPreference
 import app.lawnchair.ui.preferences.components.controls.SwitchPreference
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
+import app.lawnchair.ui.preferences.components.layout.PreferenceTemplate
 import com.android.launcher3.R
 
 private const val NOT_IMPLEMENTED = " *"
@@ -225,9 +226,9 @@ private fun NullableShapePreference(
     val context = LocalContext.current
     val navController = LocalNavController.current
     val shape = value?.let { runCatching { IconShape.fromString(it, context) }.getOrNull() }
-    ClickablePreference(
-        label = label,
-        subtitle = if (value == null) "Configuration générale" else null,
+    PreferenceTemplate(
+        title = { Text(label) },
+        description = if (value == null) ({ Text("Configuration générale") }) else null,
         endWidget = shape?.let { selected -> { IconShapePreview(iconShape = selected) } },
         onClick = { navController.navigate(PrimeDrawerShape(tabId, shapeKey, label, folderId)) },
     )
