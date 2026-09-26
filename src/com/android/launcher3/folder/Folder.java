@@ -535,6 +535,39 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         return mInfo.container == ItemInfo.NO_ID;
     }
 
+    /** Updates a workspace folder from Prime's app-selection dialog. */
+    public void setAppsFromPrimeMenu(
+            java.util.Set<com.android.launcher3.util.ComponentKey> selectedKeys,
+            com.android.launcher3.model.data.AppInfo[] allApps) {
+        if (isInAppDrawer()) return;
+
+        java.util.List<ItemInfo> removed = new java.util.ArrayList<>();
+        for (ItemInfo item : new java.util.ArrayList<>(mInfo.getContents())) {
+            com.android.launcher3.util.ComponentKey key = item.componentKey;
+            if (key != null && !selectedKeys.contains(key)) {
+                removed.add(item);
+            }
+        }
+        if (!removed.isEmpty()) {
+            removeFolderContent(false, removed.toArray(new ItemInfo[0]));
+            mActivityContext.getModelWriter().deleteItemsFromDatabase(
+                    removed, "Prime folder applications");
+        }
+
+        java.util.Set<com.android.launcher3.util.ComponentKey> existing =
+                new java.util.HashSet<>();
+        for (ItemInfo item : mInfo.getContents()) {
+            if (item.componentKey != null) existing.add(item.componentKey);
+        }
+        for (com.android.launcher3.model.data.AppInfo app : allApps) {
+            com.android.launcher3.util.ComponentKey key = app.toComponentKey();
+            if (selectedKeys.contains(key) && !existing.contains(key)) {
+                addFolderContent(app.makeWorkspaceItem(getContext()));
+            }
+        }
+        mFolderIcon.onItemsChanged(false);
+    }
+
     /** Prime can keep folders with zero or one item instead of collapsing them. */
     boolean shouldKeepSingleItemFolder() {
         return PreferenceManager.getInstance(getContext()).getPrimeShowEmptyFolders().get();
