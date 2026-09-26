@@ -390,9 +390,6 @@ class PrimeDrawerTabsRepository(context: Context) {
         drawerIconSize?.let { put("drawerIconSize", it.toDouble()) }
         showLabels?.let { put("showLabels", it) }
         labelSize?.let { put("labelSize", it.toDouble()) }
-        childIconShape?.let { put("childIconShape", it) }
-        shape?.let { put("shape", it) }
-        color?.let { put("color", it) }
         twoLineLabels?.let { put("twoLineLabels", it) }
         drawerColumns?.let { put("drawerColumns", it) }
         drawerRowHeight?.let { put("drawerRowHeight", it.toDouble()) }
@@ -419,9 +416,6 @@ class PrimeDrawerTabsRepository(context: Context) {
         drawerIconSize = this.optFloatOrNull("drawerIconSize"),
         showLabels = this.optBooleanOrNull("showLabels"),
         labelSize = this.optFloatOrNull("labelSize"),
-        childIconShape = this.optStringOrNull("childIconShape"),
-        shape = this.optStringOrNull("shape"),
-        color = this.optIntOrNull("color"),
         twoLineLabels = this.optBooleanOrNull("twoLineLabels"),
         drawerColumns = this.optIntOrNull("drawerColumns"),
         drawerRowHeight = this.optFloatOrNull("drawerRowHeight"),
@@ -448,6 +442,9 @@ class PrimeDrawerTabsRepository(context: Context) {
         rows?.let { put("rows", it) }
         showLabels?.let { put("showLabels", it) }
         labelSize?.let { put("labelSize", it.toDouble()) }
+        childIconShape?.let { put("childIconShape", it) }
+        shape?.let { put("shape", it) }
+        color?.let { put("color", it) }
     }
 
     private fun JSONObject?.toFolderVisualOverrides() = PrimeDrawerFolderVisualOverrides(
@@ -457,6 +454,9 @@ class PrimeDrawerTabsRepository(context: Context) {
         rows = this.optIntOrNull("rows"),
         showLabels = this.optBooleanOrNull("showLabels"),
         labelSize = this.optFloatOrNull("labelSize"),
+        childIconShape = this.optStringOrNull("childIconShape"),
+        shape = this.optStringOrNull("shape"),
+        color = this.optIntOrNull("color"),
     )
 
     private fun JSONObject?.optStringOrNull(key: String): String? =
