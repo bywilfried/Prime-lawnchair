@@ -244,6 +244,9 @@ class PrimeDrawerTabsRepository(context: Context) {
             rows = own.rows ?: category.folderRows,
             showLabels = own.showLabels ?: category.folderShowLabels,
             labelSize = own.labelSize ?: category.folderLabelSize,
+            childIconShape = own.childIconShape ?: category.folderChildIconShape,
+            shape = own.shape ?: category.folderShape,
+            color = own.color ?: category.folderColor,
         )
     }
 
@@ -384,6 +387,9 @@ class PrimeDrawerTabsRepository(context: Context) {
         drawerIconSize?.let { put("drawerIconSize", it.toDouble()) }
         showLabels?.let { put("showLabels", it) }
         labelSize?.let { put("labelSize", it.toDouble()) }
+        childIconShape?.let { put("childIconShape", it) }
+        shape?.let { put("shape", it) }
+        color?.let { put("color", it) }
         twoLineLabels?.let { put("twoLineLabels", it) }
         drawerColumns?.let { put("drawerColumns", it) }
         drawerRowHeight?.let { put("drawerRowHeight", it.toDouble()) }
@@ -397,6 +403,10 @@ class PrimeDrawerTabsRepository(context: Context) {
         folderRows?.let { put("folderRows", it) }
         folderShowLabels?.let { put("folderShowLabels", it) }
         folderLabelSize?.let { put("folderLabelSize", it.toDouble()) }
+        drawerIconShape?.let { put("drawerIconShape", it) }
+        folderChildIconShape?.let { put("folderChildIconShape", it) }
+        folderShape?.let { put("folderShape", it) }
+        folderColor?.let { put("folderColor", it) }
     }
 
     private fun JSONObject?.toVisualOverrides() = PrimeDrawerVisualOverrides(
@@ -406,6 +416,9 @@ class PrimeDrawerTabsRepository(context: Context) {
         drawerIconSize = this.optFloatOrNull("drawerIconSize"),
         showLabels = this.optBooleanOrNull("showLabels"),
         labelSize = this.optFloatOrNull("labelSize"),
+        childIconShape = this.optStringOrNull("childIconShape"),
+        shape = this.optStringOrNull("shape"),
+        color = this.optIntOrNull("color"),
         twoLineLabels = this.optBooleanOrNull("twoLineLabels"),
         drawerColumns = this.optIntOrNull("drawerColumns"),
         drawerRowHeight = this.optFloatOrNull("drawerRowHeight"),
@@ -419,6 +432,10 @@ class PrimeDrawerTabsRepository(context: Context) {
         folderRows = this.optIntOrNull("folderRows"),
         folderShowLabels = this.optBooleanOrNull("folderShowLabels"),
         folderLabelSize = this.optFloatOrNull("folderLabelSize"),
+        drawerIconShape = this.optStringOrNull("drawerIconShape"),
+        folderChildIconShape = this.optStringOrNull("folderChildIconShape"),
+        folderShape = this.optStringOrNull("folderShape"),
+        folderColor = this.optIntOrNull("folderColor"),
     )
 
     private fun PrimeDrawerFolderVisualOverrides.toJson() = JSONObject().apply {
@@ -439,6 +456,8 @@ class PrimeDrawerTabsRepository(context: Context) {
         labelSize = this.optFloatOrNull("labelSize"),
     )
 
+    private fun JSONObject?.optStringOrNull(key: String): String? =
+        if (this != null && has(key) && !isNull(key)) getString(key) else null
     private fun JSONObject?.optFloatOrNull(key: String): Float? =
         if (this != null && has(key) && !isNull(key)) getDouble(key).toFloat() else null
     private fun JSONObject?.optIntOrNull(key: String): Int? =
@@ -549,6 +568,10 @@ data class PrimeDrawerVisualOverrides(
     val folderRows: Int? = null,
     val folderShowLabels: Boolean? = null,
     val folderLabelSize: Float? = null,
+    val drawerIconShape: String? = null,
+    val folderChildIconShape: String? = null,
+    val folderShape: String? = null,
+    val folderColor: Int? = null,
 )
 
 data class PrimeDrawerFolderVisualOverrides(
@@ -558,4 +581,7 @@ data class PrimeDrawerFolderVisualOverrides(
     val rows: Int? = null,
     val showLabels: Boolean? = null,
     val labelSize: Float? = null,
+    val childIconShape: String? = null,
+    val shape: String? = null,
+    val color: Int? = null,
 )
