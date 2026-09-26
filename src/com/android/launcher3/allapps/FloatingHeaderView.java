@@ -452,7 +452,14 @@ public class FloatingHeaderView extends LinearLayout implements
         if (rv.getAdapter() != null) {
             rv.getAdapter().notifyDataSetChanged();
         }
-        rv.scrollToTop();
+        Boolean rememberPosition = primeOverrides != null ? primeOverrides.getRememberPosition() : null;
+        boolean shouldRememberPosition = rememberPosition != null
+                ? rememberPosition
+                : PreferenceCacheExtensionsKt.firstCached(
+                        PreferenceManager2.getInstance(getContext()).getRememberPosition());
+        if (!shouldRememberPosition) {
+            rv.scrollToTop();
+        }
 
         if (direction == 0 || rv.getWidth() == 0) return;
 
