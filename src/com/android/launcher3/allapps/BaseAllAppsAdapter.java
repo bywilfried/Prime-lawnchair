@@ -52,6 +52,7 @@ import com.android.launcher3.views.ActivityContext;
 import app.lawnchair.preferences.PreferenceManager;
 import app.lawnchair.prime.drawer.PrimeDrawerTabsRepository;
 import app.lawnchair.prime.drawer.PrimeDrawerVisualOverrides;
+import app.lawnchair.icons.shape.IconShape;
 
 /**
  * Adapter for all the apps.
@@ -422,6 +423,10 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
         if (overrides.getTwoLineLabels() != null) {
             icon.setSingleLine(!overrides.getTwoLineLabels());
             icon.setMaxLines(overrides.getTwoLineLabels() ? 2 : 1);
+        }
+        if (overrides.getDrawerIconShape() != null) {
+            icon.setPrimeIconShape(IconShape.Companion.fromString(
+                    overrides.getDrawerIconShape(), icon.getContext()));
         }
     }
 
